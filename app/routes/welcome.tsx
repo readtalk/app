@@ -18,7 +18,7 @@ export default function Welcome() {
         <div className="flex flex-col items-center gap-6">
 
           <div className="relative w-60 h-60 flex items-center justify-center">
-            <img src="/assets/192.png" alt="READTalk Logo" className={`w-32 h-32 rounded-3xl shadow-xl absolute z-10 bg-white transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${showLogo? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+            <img src="/assets/logos.png" alt="READTalk Logo" className={`w-32 h-32 rounded-3xl shadow-xl absolute z-10 bg-white transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${showLogo? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
             <div className={`absolute w-full h-full transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${!showLogo? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
               <ChatText size={180} weight="fill" className="absolute top-8 left-4 text-neutral-200 dark:text-neutral-800 rotate-[-8deg]" />
               <Phone size={40} weight="fill" className="absolute top-4 left-6 text-neutral-400 dark:text-neutral-500 rotate-[-15deg]" />
