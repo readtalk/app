@@ -41,7 +41,7 @@ export function ChatInput({
       const formData = new FormData();
       formData.append('file', file);
       
-      const response = await fetch('https://api.readtalk.workers.dev/channel/upload', {
+      const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/upload', {
         method: 'POST',
         headers: {
           'X-Channel-Id': channelId,
