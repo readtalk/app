@@ -47,7 +47,7 @@ export default function Profile() {
       const [firstName, ...lastNameParts] = fullName.trim().split(' ');
       const lastName = lastNameParts.join(' ') || '';
 
-      const response = await fetch('https://api.readtalk.workers.dev/profile', {
+      const response = await fetch('https://readtalk.soeparnocorp.workers.dev/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -133,10 +133,10 @@ export default function Profile() {
           </div>
           <div>
             <p className="text-sm font-medium text-neutral-900 dark:text-white">
-              Profile Photo
+              Profile Avatar
             </p>
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Click the camera icon to upload a new avatar.
+              Upload a new avatar.
             </p>
           </div>
         </div>
