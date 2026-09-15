@@ -76,7 +76,7 @@ export default function Channel() {
                 current.created_at < earliest.created_at ? current : earliest
             );
             
-            fetch(`https://api.readtalk.workers.dev/channel/messages?before=${earliestMessage.id}`, {
+            fetch(`https://readtalk.soeparnocorp.workers.dev/channel/messages?before=${earliestMessage.id}`, {
                 headers: {
                     'X-Session-Id': localStorage.getItem('session') || '',
                     'X-Channel-Id': currentChannel.id
@@ -127,7 +127,7 @@ export default function Channel() {
             if (!currentChannel) return;
             setIsLoadingMessages(true);
             try {
-                const response = await fetch('https://api.readtalk.workers.dev/channel/messages', {
+                const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/messages', {
                     headers: {
                         'X-Session-Id': localStorage.getItem('session') || '',
                         'X-Channel-Id': currentChannel.id
@@ -185,7 +185,7 @@ export default function Channel() {
 
     const handleLeaveChannel = async () => {
         try {
-            const response = await fetch(`https://api.readtalk.workers.dev/channels/${currentChannel?.id}/leave`, {
+            const response = await fetch(`https://readtalk.soeparnocorp.workers.dev/channels/${currentChannel?.id}/leave`, {
                 method: 'POST',
                 headers: {
                     'X-Session-Id': localStorage.getItem('session') || '',
@@ -211,7 +211,7 @@ export default function Channel() {
 
         setIsSending(true);
         try {
-            const response = await fetch('https://api.readtalk.workers.dev/channel/messages', {
+            const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -309,13 +309,13 @@ export default function Channel() {
                                 onClick={handleInviteUsers}
                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
-                                Invite Users
+                                Invite
                             </button>
                             <button
                                 onClick={handleLeaveChannel}
                                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                             >
-                                Leave Channel
+                                Leave
                             </button>
                         </div>
                     )}
