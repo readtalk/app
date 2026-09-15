@@ -35,7 +35,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
         const userId = localStorage.getItem('userId') || '';
         const sessionId = localStorage.getItem('session') || '';
-        const newWs = new WebSocket(`wss://api.readtalk.workers.dev/ws?sessionId=${encodeURIComponent(sessionId)}`);
+        const newWs = new WebSocket(`wss://readtalk.soeparnocorp.workers.dev/ws?sessionId=${encodeURIComponent(sessionId)}`);
         
         newWs.onopen = () => {
             // Notify about user's own connection
