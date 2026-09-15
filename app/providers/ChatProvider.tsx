@@ -33,7 +33,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const response = await fetch('https://api.readtalk.workers.dev/channels', {
+        const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channels', {
           headers: {
             'X-Session-Id': localStorage.getItem('session') || ''
           }
@@ -61,7 +61,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchUsers = async () => {
       try {
         // Fetch all users
-        const usersResponse = await fetch('https://api.readtalk.workers.dev/users', {
+        const usersResponse = await fetch('https://readtalk.soeparnocorp.workers.dev/users', {
           headers: {
             'X-Session-Id': localStorage.getItem('session') || '',
           }
@@ -75,7 +75,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         // Fetch online users
-        const onlineResponse = await fetch('https://api.readtalk.workers.dev/users/online', {
+        const onlineResponse = await fetch('https://readtalk.soeparnocorp.workers.dev/users/online', {
           headers: {
             'X-Session-Id': localStorage.getItem('session') || '',
           }
@@ -132,7 +132,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const loadChannelMessages = async (channelId: string, before?: string) => {
     try {
       setIsLoadingMessages(true);
-      const url = new URL(`https://api.readtalk.workers.dev/channels/${channelId}/messages`);
+      const url = new URL(`https://readtalk.soeparnocorp.workers.dev/channels/${channelId}/messages`);
       if (before) {
         url.searchParams.append('before', before);
       }
