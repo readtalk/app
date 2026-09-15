@@ -29,7 +29,7 @@ export default function Register() {
     setError(null);
     setIsLoading(true);
     try {
-      const response = await fetch("https://api.readtalk.workers.dev/register", {
+      const response = await fetch("https://readtalk.soeparnocorp.workers.dev/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials)
