@@ -105,7 +105,7 @@ export default function AuthLayout() {
     const handleSignOut = async () => {
         try {
             const sessionId = localStorage.getItem('session');
-            await fetch('https://api.readtalk.workers.dev/logout', {
+            await fetch('https://readtalk.soeparnocorp.workers.dev/logout', {
                 method: 'POST',
                 headers: {
                     'X-Session-Id': sessionId || ''
