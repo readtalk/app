@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Hash, Lock, ArrowDown, DotsThree } from "@phosphor-icons/react";
+import { Hash, Lock, ArrowDown, DotsThree, ArrowLeft } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
@@ -10,14 +10,16 @@ import { ChatInput } from '~/components/ChatInput';
 
 export default function Channel() {
     const { id } = useParams();
-    const { channels, users, loadChannelMessages, hasMoreMessages, onlineUsers } = useChatContext();
+    const { channels, users, onlineUsers } = useChatContext();
     const { addMessageListener, removeMessageListener, isConnected, reconnect } = useWebSocket();
     const [message, setMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [localMessages, setLocalMessages] = useState<Message[]>([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+    const [hasMoreLocal, setHasMoreLocal] = useState(true);
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const isNearBottomRef = useRef(true);
+    const isLoadingMoreRef = useRef(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -70,12 +72,21 @@ export default function Channel() {
         isNearBottomRef.current = isNear;
         setShowScrollButton(!isNear);
 
-        if (container.scrollTop <= 50 && hasMoreMessages && !isLoadingMessages && localMessages.length > 0 && currentChannel) {
+        if (
+            container.scrollTop <= 50 &&
+            hasMoreLocal &&
+            !isLoadingMessages &&
+            !isLoadingMoreRef.current &&
+            localMessages.length > 0 &&
+            currentChannel
+        ) {
+            isLoadingMoreRef.current = true;
             const scrollHeight = container.scrollHeight;
-            const earliestMessage = localMessages.reduce((earliest, current) => 
+
+            const earliestMessage = localMessages.reduce((earliest, current) =>
                 current.created_at < earliest.created_at ? current : earliest
             );
-            
+
             fetch(`https://readtalk.soeparnocorp.workers.dev/channel/messages?before=${earliestMessage.id}`, {
                 headers: {
                     'X-Session-Id': localStorage.getItem('session') || '',
@@ -84,26 +95,32 @@ export default function Channel() {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    setLocalMessages(prev => 
+                if (data.success && data.messages.length > 0) {
+                    setLocalMessages(prev =>
                         [...prev, ...data.messages].sort((a, b) => a.created_at - b.created_at)
                     );
                     requestAnimationFrame(() => {
-                        const newScrollHeight = container.scrollHeight;
-                        container.scrollTop = newScrollHeight - scrollHeight;
+                        requestAnimationFrame(() => {
+                            const newScrollHeight = container.scrollHeight;
+                            container.scrollTop = newScrollHeight - scrollHeight;
+                        });
                     });
+                } else {
+                    setHasMoreLocal(false);
                 }
             })
-            .catch(error => console.error('Error loading more messages:', error));
+            .catch(error => console.error('Error loading more messages:', error))
+            .finally(() => {
+                isLoadingMoreRef.current = false;
+            });
         }
-    }, [hasMoreMessages, isLoadingMessages, localMessages, currentChannel?.id]);
+    }, [hasMoreLocal, isLoadingMessages, localMessages, currentChannel?.id]);
 
     useEffect(() => {
         if (id) {
             addMessageListener(id, (message) => {
                 setLocalMessages(prev => [...prev, message]);
-                
-                // 🔔 INCOMING SOUND MESSAGE
+
                 const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
                 audio.play().catch(() => {});
 
@@ -126,6 +143,8 @@ export default function Channel() {
         const fetchMessages = async () => {
             if (!currentChannel) return;
             setIsLoadingMessages(true);
+            setHasMoreLocal(true);
+            isLoadingMoreRef.current = false;
             try {
                 const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/messages', {
                     headers: {
@@ -218,9 +237,9 @@ export default function Channel() {
                     'X-Channel-Id': currentChannel.id,
                     'X-Session-Id': localStorage.getItem('session') || '',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     content: message,
-                    assets: assets 
+                    assets: assets
                 })
             });
 
@@ -229,7 +248,6 @@ export default function Channel() {
                 throw new Error('Failed to send message');
             }
             if (data.success && data.message) {
-                // 🔔 OUTGOING SOUND MESSAGE
                 const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
                 audio.play().catch(() => {});
 
@@ -257,11 +275,11 @@ export default function Channel() {
     return (
         <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
-                <button 
+                <button
                     onClick={() => navigate('/channel/0')}
                     className="md:hidden p-2 -ml-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
                 >
-                    ←
+                    <ArrowLeft size={20} weight="bold" />
                 </button>
                 <div className="flex-1">
                     <h1 className="text-lg font-semibold flex items-center gap-2">
@@ -282,7 +300,7 @@ export default function Channel() {
                         .map(user => (
                             <div key={user.id} className="relative" title={`${user.first_name} ${user.last_name}`}>
                                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-blue-500 text-white"
-                                    style={{ 
+                                    style={{
                                         backgroundColor: getColorFromName(`${user.first_name} ${user.last_name}`),
                                         color: getContrastColor(getColorFromName(`${user.first_name} ${user.last_name}`))
                                     }}
@@ -295,7 +313,7 @@ export default function Channel() {
                             </div>
                         ))}
                 </div>
-                
+
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setShowDropdown(!showDropdown)}
@@ -323,7 +341,7 @@ export default function Channel() {
             </div>
 
             <div className="flex-1 min-h-0 relative">
-                <div 
+                <div
                     ref={messageContainerRef}
                     onScroll={handleScroll}
                     className="h-full overflow-y-auto p-4"
@@ -336,7 +354,7 @@ export default function Channel() {
                         <div className="space-y-4">
                             {localMessages.map((msg) => {
                                 const user = userMap[msg.user_id];
-                                const displayName = user 
+                                const displayName = user
                                     ? `${user.first_name} ${user.last_name}`
                                     : msg.user_id.split('-')[0];
                                 const assets = JSON.parse(msg.assets) as string[];
@@ -344,7 +362,7 @@ export default function Channel() {
                                 return (
                                     <div key={msg.id} className="flex items-start group">
                                         <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
-                                            style={{ 
+                                            style={{
                                                 backgroundColor: getColorFromName(displayName),
                                                 color: getContrastColor(getColorFromName(displayName))
                                             }}
@@ -366,7 +384,7 @@ export default function Channel() {
                                             {assets.length > 0 && (
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {assets.map((url, index) => (
-                                                        <img 
+                                                        <img
                                                             key={index}
                                                             src={url}
                                                             alt="Uploaded content"
@@ -394,7 +412,7 @@ export default function Channel() {
                 )}
             </div>
 
-            <ChatInput 
+            <ChatInput
                 message={message}
                 onChange={setMessage}
                 onSubmit={handleSubmit}
