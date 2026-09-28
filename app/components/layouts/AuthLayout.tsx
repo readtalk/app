@@ -203,7 +203,7 @@ export default function AuthLayout() {
                 {/* Sidebar - full width di mobile, 56 di desktop */}
                 <div className={`
                     ${isChatPage ? 'hidden md:block' : 'block'} 
-                    w-full md:w-56 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
+                    w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     {/* Channels Section */}
                     <div className="px-2 mb-2 flex justify-between items-center">
