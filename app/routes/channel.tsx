@@ -57,6 +57,33 @@ export default function Channel() {
         return lightness > 65 ? '#000000' : '#ffffff';
     };
 
+    const isSameDay = (a: number, b: number) => {
+        const da = new Date(a * 1000);
+        const db = new Date(b * 1000);
+        return da.getFullYear() === db.getFullYear()
+            && da.getMonth() === db.getMonth()
+            && da.getDate() === db.getDate();
+    };
+
+    const formatDay = (timestamp: number) => {
+        const d = new Date(timestamp * 1000);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        if (d.toDateString() === today.toDateString()) return 'Hari ini';
+        if (d.toDateString() === yesterday.toDateString()) return 'Kemarin';
+
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+
+    const formatTime = (timestamp: number) => {
+        return new Date(timestamp * 1000).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
     const currentChannel = channels.find(channel => channel.id.toString() === id);
 
     const scrollToBottom = () => {
@@ -276,10 +303,6 @@ export default function Channel() {
         }
     };
 
-    const formatDate = (timestamp: number) => {
-        return new Date(timestamp * 1000).toLocaleString();
-    };
-
     return (
         <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
@@ -360,80 +383,90 @@ export default function Channel() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {localMessages.map((msg) => {
+                            {localMessages.map((msg, index) => {
                                 const user = userMap[msg.user_id];
                                 const displayName = user
                                     ? `${user.first_name} ${user.last_name}`
                                     : msg.user_id.split('-')[0];
                                 const assets = JSON.parse(msg.assets) as string[];
                                 const isMe = msg.user_id === myUserId;
-
-                                if (isMe) {
-                                    return (
-                                        <div key={msg.id} className="flex justify-end">
-                                            <div className="max-w-[75%]">
-                                                <div className="bg-red-100 dark:bg-red-950 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-br-sm">
-                                                    {msg.content && (
-                                                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                                                    )}
-                                                    {assets.length > 0 && (
-                                                        <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
-                                                            {assets.map((url, index) => (
-                                                                <img
-                                                                    key={index}
-                                                                    src={url}
-                                                                    alt="Uploaded content"
-                                                                    className="max-w-[300px] max-h-[300px] rounded-lg"
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                                                        {formatDate(msg.created_at)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                }
+                                const prev = localMessages[index - 1];
+                                const isNewDay = !prev || !isSameDay(prev.created_at, msg.created_at);
 
                                 return (
-                                    <div key={msg.id} className="flex items-start gap-2">
-                                        <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
-                                            style={{
-                                                backgroundColor: getColorFromName(displayName),
-                                                color: getContrastColor(getColorFromName(displayName))
-                                            }}
-                                        >
-                                            {getUserInitials(msg.user_id)}
-                                        </div>
-                                        <div className="min-w-0 flex flex-col items-start max-w-[75%]">
-                                            <div className="bg-neutral-100 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm">
-                                                <div className="flex items-baseline gap-2 mb-0.5">
-                                                    <span className="font-medium text-xs">
-                                                        {displayName}
-                                                    </span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {formatDate(msg.created_at)}
-                                                    </span>
-                                                </div>
-                                                {msg.content && (
-                                                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                                                )}
-                                                {assets.length > 0 && (
-                                                    <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
-                                                        {assets.map((url, index) => (
-                                                            <img
-                                                                key={index}
-                                                                src={url}
-                                                                alt="Uploaded content"
-                                                                className="max-w-[300px] max-h-[300px] rounded-lg"
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                )}
+                                    <div key={msg.id}>
+                                        {isNewDay && (
+                                            <div className="flex justify-center my-4">
+                                                <span className="px-3 py-1 text-xs rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                                    {formatDay(msg.created_at)}
+                                                </span>
                                             </div>
-                                        </div>
+                                        )}
+
+                                        {isMe ? (
+                                            <div className="flex justify-end">
+                                                <div className="max-w-[75%]">
+                                                    <div className="bg-red-100 dark:bg-red-950 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-br-sm shadow-sm">
+                                                        {msg.content && (
+                                                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                        )}
+                                                        {assets.length > 0 && (
+                                                            <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
+                                                                {assets.map((url, i) => (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={url}
+                                                                        alt="Uploaded content"
+                                                                        className="max-w-[300px] max-h-[300px] rounded-lg"
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                                                            {formatTime(msg.created_at)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start gap-2">
+                                                <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
+                                                    style={{
+                                                        backgroundColor: getColorFromName(displayName),
+                                                        color: getContrastColor(getColorFromName(displayName))
+                                                    }}
+                                                >
+                                                    {getUserInitials(msg.user_id)}
+                                                </div>
+                                                <div className="min-w-0 flex flex-col items-start max-w-[75%]">
+                                                    <div className="bg-neutral-100 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm">
+                                                        <div className="flex items-baseline gap-2 mb-0.5">
+                                                            <span className="font-medium text-xs">
+                                                                {displayName}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                {formatTime(msg.created_at)}
+                                                            </span>
+                                                        </div>
+                                                        {msg.content && (
+                                                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                        )}
+                                                        {assets.length > 0 && (
+                                                            <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
+                                                                {assets.map((url, i) => (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={url}
+                                                                        alt="Uploaded content"
+                                                                        className="max-w-[300px] max-h-[300px] rounded-lg"
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
