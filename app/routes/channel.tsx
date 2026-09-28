@@ -123,6 +123,7 @@ export default function Channel() {
 
                 const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
                 audio.play().catch(() => {});
+                navigator.vibrate?.([200, 100, 200]);
 
                 if (isNearBottomRef.current) {
                     requestAnimationFrame(() => {
@@ -255,6 +256,7 @@ export default function Channel() {
             if (data.success && data.message) {
                 const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
                 audio.play().catch(() => {});
+                navigator.vibrate?.([200, 100, 200]);
 
                 if (isNearBottomRef.current) {
                     requestAnimationFrame(() => {
