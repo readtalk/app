@@ -121,7 +121,7 @@ export default function Channel() {
             addMessageListener(id, (message) => {
                 setLocalMessages(prev => [...prev, message]);
 
-                const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
+                const audio = new Audio('/notification/to-the-point-568.mp3');
                 audio.play().catch(() => {});
                 navigator.vibrate?.([200, 100, 200]);
 
