@@ -26,6 +26,8 @@ export default function Channel() {
     const { openModal, closeModal } = useModal();
     const navigate = useNavigate();
 
+    const myUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+
     const userMap = useMemo(() => {
         return users.reduce((acc, user) => {
             acc[user.id] = user;
@@ -256,7 +258,6 @@ export default function Channel() {
             if (data.success && data.message) {
                 const audio = new Audio('/notification/all-eyes-on-me-465.mp3');
                 audio.play().catch(() => {});
-                
 
                 if (isNearBottomRef.current) {
                     requestAnimationFrame(() => {
@@ -365,9 +366,39 @@ export default function Channel() {
                                     ? `${user.first_name} ${user.last_name}`
                                     : msg.user_id.split('-')[0];
                                 const assets = JSON.parse(msg.assets) as string[];
+                                const isMe = msg.user_id === myUserId;
+
+                                if (isMe) {
+                                    return (
+                                        <div key={msg.id} className="flex justify-end">
+                                            <div className="max-w-[75%]">
+                                                <div className="bg-red-100 dark:bg-red-950 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-br-sm">
+                                                    {msg.content && (
+                                                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                    )}
+                                                    {assets.length > 0 && (
+                                                        <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
+                                                            {assets.map((url, index) => (
+                                                                <img
+                                                                    key={index}
+                                                                    src={url}
+                                                                    alt="Uploaded content"
+                                                                    className="max-w-[300px] max-h-[300px] rounded-lg"
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                                                        {formatDate(msg.created_at)}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
 
                                 return (
-                                    <div key={msg.id} className="flex items-start group">
+                                    <div key={msg.id} className="flex items-start gap-2">
                                         <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
                                             style={{
                                                 backgroundColor: getColorFromName(displayName),
@@ -376,30 +407,32 @@ export default function Channel() {
                                         >
                                             {getUserInitials(msg.user_id)}
                                         </div>
-                                        <div className="ml-2 min-w-0 flex-1">
-                                            <div className="flex items-center">
-                                                <span className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {displayName}
-                                                </span>
-                                                <span className="ml-2 text-xs text-gray-500">
-                                                    {formatDate(msg.created_at)}
-                                                </span>
-                                            </div>
-                                            <p className="text-gray-900 dark:text-gray-100">
-                                                {msg.content}
-                                            </p>
-                                            {assets.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {assets.map((url, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={url}
-                                                            alt="Uploaded content"
-                                                            className="max-w-[300px] max-h-[300px] rounded-lg"
-                                                        />
-                                                    ))}
+                                        <div className="min-w-0 flex flex-col items-start max-w-[75%]">
+                                            <div className="bg-neutral-100 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm">
+                                                <div className="flex items-baseline gap-2 mb-0.5">
+                                                    <span className="font-medium text-xs">
+                                                        {displayName}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {formatDate(msg.created_at)}
+                                                    </span>
                                                 </div>
-                                            )}
+                                                {msg.content && (
+                                                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                )}
+                                                {assets.length > 0 && (
+                                                    <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
+                                                        {assets.map((url, index) => (
+                                                            <img
+                                                                key={index}
+                                                                src={url}
+                                                                alt="Uploaded content"
+                                                                className="max-w-[300px] max-h-[300px] rounded-lg"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
