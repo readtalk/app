@@ -353,6 +353,11 @@ export default function Channel() {
                     ref={messageContainerRef}
                     onScroll={handleScroll}
                     className="h-full overflow-y-auto p-4"
+                    style={{
+                        backgroundImage: 'url(/assets/bg.png)',
+                        backgroundRepeat: 'repeat',
+                        backgroundSize: '400px',
+                    }}
                 >
                     {isLoadingMessages ? (
                         <div className="flex justify-center items-center h-full">
@@ -393,10 +398,10 @@ export default function Channel() {
                                                 </div>
                                             )}
 
-                                            <div className={`px-3 py-2 rounded-lg ${
+                                            <div className={`px-3 py-2 rounded-2xl shadow-sm ${
                                                 isMe
-                                                    ? 'bg-red-500 text-white'
-                                                    : 'bg-neutral-200 dark:bg-neutral-800 text-gray-900 dark:text-gray-100'
+                                                    ? 'bg-red-500 text-white rounded-br-sm'
+                                                    : 'bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 rounded-bl-sm'
                                             }`}>
                                                 {msg.content && (
                                                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
