@@ -349,10 +349,11 @@ export default function Channel() {
             </div>
 
             <div className="flex-1 min-h-0 relative">
+                <div className="absolute inset-0 dark:bg-black/60 pointer-events-none z-10" />
                 <div
                     ref={messageContainerRef}
                     onScroll={handleScroll}
-                    className="h-full overflow-y-auto p-4"
+                    className="h-full overflow-y-auto p-4 relative z-20"
                     style={{
                         backgroundImage: 'url(/assets/bg.png)',
                         backgroundRepeat: 'repeat',
@@ -392,16 +393,13 @@ export default function Channel() {
                                                     <span className="font-medium text-gray-900 dark:text-gray-100">
                                                         {displayName}
                                                     </span>
-                                                    <span className="ml-2 text-xs text-gray-500">
-                                                        {formatDate(msg.created_at)}
-                                                    </span>
                                                 </div>
                                             )}
 
                                             <div className={`px-3 py-2 rounded-2xl shadow-sm ${
                                                 isMe
                                                     ? 'bg-red-500 text-white rounded-br-sm'
-                                                    : 'bg-white dark:bg-neutral-800 text-gray-900 dark:text-gray-100 rounded-bl-sm'
+                                                    : 'bg-neutral-200 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 rounded-bl-sm'
                                             }`}>
                                                 {msg.content && (
                                                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
@@ -418,11 +416,11 @@ export default function Channel() {
                                                         ))}
                                                     </div>
                                                 )}
-                                                {isMe && (
-                                                    <div className="text-xs text-red-100 mt-1 text-right">
-                                                        {formatDate(msg.created_at)}
-                                                    </div>
-                                                )}
+                                                <div className={`text-xs mt-1 text-right ${
+                                                    isMe ? 'text-red-100' : 'text-neutral-500 dark:text-neutral-400'
+                                                }`}>
+                                                    {formatDate(msg.created_at)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -435,7 +433,7 @@ export default function Channel() {
                 {showScrollButton && (
                     <button
                         onClick={scrollToBottom}
-                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-600 flex items-center gap-2"
+                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-red-600 flex items-center gap-2 z-30"
                     >
                         <ArrowDown weight="bold" className="w-4 h-4" />
                         Scroll to latest
