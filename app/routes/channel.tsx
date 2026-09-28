@@ -368,69 +368,57 @@ export default function Channel() {
                                 const assets = JSON.parse(msg.assets) as string[];
                                 const isMe = msg.user_id === myUserId;
 
-                                if (isMe) {
-                                    return (
-                                        <div key={msg.id} className="flex justify-end">
-                                            <div className="max-w-[75%]">
-                                                <div className="bg-red-500 text-white px-3 py-2 rounded-lg">
-                                                    {msg.content && (
-                                                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                                                    )}
-                                                    {assets.length > 0 && (
-                                                        <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
-                                                            {assets.map((url, index) => (
-                                                                <img
-                                                                    key={index}
-                                                                    src={url}
-                                                                    alt="Uploaded content"
-                                                                    className="max-w-[300px] max-h-[300px] rounded-lg"
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    )}
+                                return (
+                                    <div key={msg.id} className={`flex items-start gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                                        {!isMe && (
+                                            <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
+                                                style={{
+                                                    backgroundColor: getColorFromName(displayName),
+                                                    color: getContrastColor(getColorFromName(displayName))
+                                                }}
+                                            >
+                                                {getUserInitials(msg.user_id)}
+                                            </div>
+                                        )}
+
+                                        <div className={`min-w-0 flex ${isMe ? 'items-end' : 'items-start'} flex-col max-w-[75%]`}>
+                                            {!isMe && (
+                                                <div className="flex items-center mb-1">
+                                                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {displayName}
+                                                    </span>
+                                                    <span className="ml-2 text-xs text-gray-500">
+                                                        {formatDate(msg.created_at)}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            <div className={`px-3 py-2 rounded-lg ${
+                                                isMe
+                                                    ? 'bg-red-500 text-white'
+                                                    : 'bg-neutral-200 dark:bg-neutral-800 text-gray-900 dark:text-gray-100'
+                                            }`}>
+                                                {msg.content && (
+                                                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                )}
+                                                {assets.length > 0 && (
+                                                    <div className={`flex flex-wrap gap-2 ${msg.content ? 'mt-2' : ''}`}>
+                                                        {assets.map((url, index) => (
+                                                            <img
+                                                                key={index}
+                                                                src={url}
+                                                                alt="Uploaded content"
+                                                                className="max-w-[300px] max-h-[300px] rounded-lg"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {isMe && (
                                                     <div className="text-xs text-red-100 mt-1 text-right">
                                                         {formatDate(msg.created_at)}
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
-                                        </div>
-                                    );
-                                }
-
-                                return (
-                                    <div key={msg.id} className="flex items-start group">
-                                        <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
-                                            style={{
-                                                backgroundColor: getColorFromName(displayName),
-                                                color: getContrastColor(getColorFromName(displayName))
-                                            }}
-                                        >
-                                            {getUserInitials(msg.user_id)}
-                                        </div>
-                                        <div className="ml-2 min-w-0 flex-1">
-                                            <div className="flex items-center">
-                                                <span className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {displayName}
-                                                </span>
-                                                <span className="ml-2 text-xs text-gray-500">
-                                                    {formatDate(msg.created_at)}
-                                                </span>
-                                            </div>
-                                            <p className="text-gray-900 dark:text-gray-100">
-                                                {msg.content}
-                                            </p>
-                                            {assets.length > 0 && (
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                    {assets.map((url, index) => (
-                                                        <img
-                                                            key={index}
-                                                            src={url}
-                                                            alt="Uploaded content"
-                                                            className="max-w-[300px] max-h-[300px] rounded-lg"
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 );
