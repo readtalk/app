@@ -354,12 +354,14 @@ export default function Channel() {
                     </button>
                     {showDropdown && (
                         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg z-10 py-1">
-                            <button
-                                onClick={handleInviteUsers}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                            >
-                                Invite
-                            </button>
+                            {!currentChannel.is_private && (
+                                <button
+                                    onClick={handleInviteUsers}
+                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                >
+                                    Invite
+                                </button>
+                            )}
                             <button
                                 onClick={handleLeaveChannel}
                                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
