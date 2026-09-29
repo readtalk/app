@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { ArrowLeft } from "@phosphor-icons/react";
 
 import { Avatar } from '~/components/avatar/Avatar';
 import { Button } from '~/components/button/Button';
@@ -90,120 +91,125 @@ export default function Profile() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-4 sm:p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          Profile Settings
-        </h1>
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          ← Back
-        </Button>
+    <div className="flex flex-col h-full">
+      <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
+        <button
+          onClick={() => navigate(-1)}
+          className="md:hidden p-2 -ml-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
+        >
+          <ArrowLeft size={20} weight="bold" />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            Profile Settings
+          </h1>
+        </div>
       </div>
 
-      <Card className="space-y-6">
-        {/* Avatar Section */}
-        <div className="flex items-center gap-6">
-          <div className="relative">
-            <Avatar
-              image={avatar}
-              username={fullName || 'User'}
-              size="base"
-              className="h-20 w-20 ring-2 ring-white dark:ring-neutral-800"
-            />
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="absolute -bottom-1 -right-1 rounded-full bg-[#FF0000] p-1.5 text-white shadow-lg transition hover:bg-[#CC0000]"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="mx-auto max-w-2xl">
+          <Card className="space-y-6">
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <Avatar
+                  image={avatar}
+                  username={fullName || 'User'}
+                  size="base"
+                  className="h-20 w-20 ring-2 ring-white dark:ring-neutral-800"
+                />
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="absolute -bottom-1 -right-1 rounded-full bg-[#FF0000] p-1.5 text-white shadow-lg transition hover:bg-[#CC0000]"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                </button>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                  Profile Avatar
+                </p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Upload a new avatar.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label title="Full Name" required>
+                  <Input
+                    type="text"
+                    value={fullName}
+                    onValueChange={(value) => setFullName(value)}
+                    placeholder="Enter your full name"
+                    size="base"
+                  />
+                </Label>
+              </div>
+
+              <div>
+                <Label title="Email" required>
+                  <Input
+                    type="email"
+                    value={email}
+                    onValueChange={(value) => setEmail(value)}
+                    placeholder="Enter your email"
+                    size="base"
+                    disabled
+                    className="cursor-not-allowed bg-neutral-100 dark:bg-neutral-800"
+                  />
+                </Label>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                  Email cannot be changed
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="rounded-md bg-green-50 p-3 text-sm text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                {successMessage}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="primary"
+                onClick={handleSave}
+                loading={isSaving}
+                disabled={isSaving}
               >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            </button>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">
-              Profile Avatar
-            </p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Upload a new avatar.
-            </p>
-          </div>
+                Save Changes
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Card>
         </div>
-
-        {/* Form */}
-        <div className="space-y-4">
-          <div>
-            <Label title="Full Name" required>
-              <Input
-                type="text"
-                value={fullName}
-                onValueChange={(value) => setFullName(value)}
-                placeholder="Enter your full name"
-                size="base"
-              />
-            </Label>
-          </div>
-
-          <div>
-            <Label title="Email" required>
-              <Input
-                type="email"
-                value={email}
-                onValueChange={(value) => setEmail(value)}
-                placeholder="Enter your email"
-                size="base"
-                disabled
-                className="cursor-not-allowed bg-neutral-100 dark:bg-neutral-800"
-              />
-            </Label>
-            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              Email cannot be changed
-            </p>
-          </div>
-        </div>
-
-        {/* Error & Success */}
-        {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
-            {error}
-          </div>
-        )}
-        {successMessage && (
-          <div className="rounded-md bg-green-50 p-3 text-sm text-green-600 dark:bg-green-900/20 dark:text-green-400">
-            {successMessage}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex gap-3 pt-2">
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            loading={isSaving}
-            disabled={isSaving}
-          >
-            Save Changes
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => navigate(-1)}
-            disabled={isSaving}
-          >
-            Cancel
-          </Button>
-        </div>
-      </Card>
+      </div>
 
       {showUploadModal && (
         <UploadAvatarModal
