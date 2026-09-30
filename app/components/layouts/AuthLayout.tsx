@@ -133,48 +133,9 @@ export default function AuthLayout() {
 
     const isChatPage = location.pathname.startsWith('/channel/') && location.pathname !== '/channel/0';
 
-    const NavBar = () => (
-        <div className="flex w-full items-center justify-center gap-8 border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative">
-            <button
-                onClick={() => setActiveTab('chat')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'chat' ? 'bg-red-50 dark:bg-red-950' : ''}`}
-            >
-                <ChatCircleDots size={22} weight={activeTab === 'chat' ? 'fill' : 'regular'} className={activeTab === 'chat' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'chat' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Chat</span>
-            </button>
-            <button
-                onClick={() => setActiveTab('update')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'update' ? 'bg-red-50 dark:bg-red-950' : ''}`}
-            >
-                <Camera size={22} weight={activeTab === 'update' ? 'fill' : 'regular'} className={activeTab === 'update' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'update' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Update</span>
-            </button>
-            <button
-                onClick={() => setActiveTab('communities')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'communities' ? 'bg-red-50 dark:bg-red-950' : ''}`}
-            >
-                <UsersThree size={22} weight={activeTab === 'communities' ? 'fill' : 'regular'} className={activeTab === 'communities' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'communities' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Communities</span>
-            </button>
-            <button
-                onClick={() => setActiveTab('call')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'call' ? 'bg-red-50 dark:bg-red-950' : ''}`}
-            >
-                <Phone size={22} weight={activeTab === 'call' ? 'fill' : 'regular'} className={activeTab === 'call' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
-            </button>
-
-            <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
-                {userInitials}
-            </div>
-        </div>
-    );
-
     return (
         <div className="flex flex-col h-screen">
-            <div className="border-b border-neutral-200 dark:border-neutral-800">
-                <NavBar />
-            </div>
+            <div className="w-full border-b border-neutral-200 dark:border-neutral-800" />
 
             <div className="flex flex-1 overflow-hidden">
                 <div className={`
@@ -320,8 +281,37 @@ export default function AuthLayout() {
                 </div>
             </div>
 
-            <div className="border-t border-neutral-200 dark:border-neutral-800">
-                <NavBar />
+            <div className="w-full border-t border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950">
+                <div className="flex md:flex-col items-center justify-center gap-8 md:gap-2 md:absolute md:left-0 md:top-0 md:h-full md:w-16 md:border-r md:border-neutral-200 md:dark:border-neutral-800">
+                    <button
+                        onClick={() => setActiveTab('chat')}
+                        className={`flex md:flex-col flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'chat' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                    >
+                        <ChatCircleDots size={22} weight={activeTab === 'chat' ? 'fill' : 'regular'} className={activeTab === 'chat' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                        <span className={`text-xs ${activeTab === 'chat' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Chat</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('update')}
+                        className={`flex md:flex-col flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'update' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                    >
+                        <Camera size={22} weight={activeTab === 'update' ? 'fill' : 'regular'} className={activeTab === 'update' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                        <span className={`text-xs ${activeTab === 'update' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Update</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('communities')}
+                        className={`flex md:flex-col flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'communities' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                    >
+                        <UsersThree size={22} weight={activeTab === 'communities' ? 'fill' : 'regular'} className={activeTab === 'communities' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                        <span className={`text-xs ${activeTab === 'communities' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Communities</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('call')}
+                        className={`flex md:flex-col flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'call' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                    >
+                        <Phone size={22} weight={activeTab === 'call' ? 'fill' : 'regular'} className={activeTab === 'call' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                        <span className={`text-xs ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
+                    </button>
+                </div>
             </div>
         </div>
     );
