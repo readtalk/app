@@ -11,6 +11,7 @@ export default function AuthLayout() {
     const { channels, onlineUsers, offlineUsers, isLoadingChannels, users, updateUserStatus } = useChatContext();
     const { addMessageListener, removeMessageListener } = useWebSocket();
     const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+    const [activeTab, setActiveTab] = useState<'chat' | 'update' | 'communities' | 'call'>('chat');
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
             const savedTheme = localStorage.getItem('theme');
@@ -135,21 +136,33 @@ export default function AuthLayout() {
     return (
         <div className="flex flex-col h-screen">
             <div className="flex w-full items-center justify-center gap-8 border-b border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative">
-                <button className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg bg-red-50 dark:bg-red-950">
-                    <ChatCircleDots size={22} weight="fill" className="text-red-500" />
-                    <span className="text-xs font-medium text-red-500">Chat</span>
+                <button
+                    onClick={() => setActiveTab('chat')}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'chat' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                >
+                    <ChatCircleDots size={22} weight={activeTab === 'chat' ? 'fill' : 'regular'} className={activeTab === 'chat' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                    <span className={`text-xs ${activeTab === 'chat' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Chat</span>
                 </button>
-                <button className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg">
-                    <Camera size={22} className="text-neutral-500 dark:text-neutral-400" />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Update</span>
+                <button
+                    onClick={() => setActiveTab('update')}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'update' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                >
+                    <Camera size={22} weight={activeTab === 'update' ? 'fill' : 'regular'} className={activeTab === 'update' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                    <span className={`text-xs ${activeTab === 'update' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Update</span>
                 </button>
-                <button className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg">
-                    <UsersThree size={22} className="text-neutral-500 dark:text-neutral-400" />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Communities</span>
+                <button
+                    onClick={() => setActiveTab('communities')}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'communities' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                >
+                    <UsersThree size={22} weight={activeTab === 'communities' ? 'fill' : 'regular'} className={activeTab === 'communities' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                    <span className={`text-xs ${activeTab === 'communities' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Communities</span>
                 </button>
-                <button className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg">
-                    <Phone size={22} className="text-neutral-500 dark:text-neutral-400" />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Call</span>
+                <button
+                    onClick={() => setActiveTab('call')}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'call' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                >
+                    <Phone size={22} weight={activeTab === 'call' ? 'fill' : 'regular'} className={activeTab === 'call' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                    <span className={`text-xs ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
                 </button>
 
                 <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
@@ -212,68 +225,88 @@ export default function AuthLayout() {
                         )}
                     </div>
 
-                    <div className="px-2 mb-2 flex justify-between items-center">
-                        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
-                            Channels
-                        </h2>
-                        <Plus 
-                            size={16} 
-                            className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
-                            onClick={() => {
-                                openModal(<CreateChannelModal onClose={closeModal} />);
-                            }}
-                        />
-                    </div>
-                    {isLoadingChannels ? (
-                        <div className="px-2 py-1.5 text-base text-neutral-500">Loading channels...</div>
-                    ) : (
-                        channels.map((channel) => (
-                            <Link
-                                key={channel.id}
-                                to={`/channel/${channel.id}`}
-                                className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                            >
-                                <div className="flex items-center flex-1">
-                                    {channel.is_private ? (
-                                        <Lock size={14} className="mr-2" />
-                                    ) : (
-                                        <span className="mr-2">#</span>
-                                    )}
-                                    <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                        {channel.name}
-                                    </span>
-                                </div>
-                            </Link>
-                        ))
+                    {activeTab === 'chat' && (
+                        <>
+                            <div className="px-2 mb-2 flex justify-between items-center">
+                                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
+                                    Channels
+                                </h2>
+                                <Plus 
+                                    size={16} 
+                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
+                                    onClick={() => {
+                                        openModal(<CreateChannelModal onClose={closeModal} />);
+                                    }}
+                                />
+                            </div>
+                            {isLoadingChannels ? (
+                                <div className="px-2 py-1.5 text-base text-neutral-500">Loading channels...</div>
+                            ) : (
+                                channels.map((channel) => (
+                                    <Link
+                                        key={channel.id}
+                                        to={`/channel/${channel.id}`}
+                                        className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                    >
+                                        <div className="flex items-center flex-1">
+                                            {channel.is_private ? (
+                                                <Lock size={14} className="mr-2" />
+                                            ) : (
+                                                <span className="mr-2">#</span>
+                                            )}
+                                            <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
+                                                {channel.name}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                ))
+                            )}
+                        </>
                     )}
 
-                    <div className="px-2 mt-6 mb-2 flex justify-between items-center">
-                        <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
-                            Users
-                        </h2>
-                        <Plus 
-                            size={16} 
-                            className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer" 
-                        />
-                    </div>
-                    {onlineUsers.map((user) => (
-                        <div 
-                            key={user.id}
-                            className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                        >
-                            <span className="mr-2 size-2 rounded-full bg-green-500"></span>
-                            {user.first_name} {user.last_name}
+                    {activeTab === 'update' && (
+                        <>
+                            <div className="px-2 mb-2 flex justify-between items-center">
+                                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
+                                    Users
+                                </h2>
+                                <Plus 
+                                    size={16} 
+                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer" 
+                                />
+                            </div>
+                            {onlineUsers.map((user) => (
+                                <div 
+                                    key={user.id}
+                                    className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                >
+                                    <span className="mr-2 size-2 rounded-full bg-green-500"></span>
+                                    {user.first_name} {user.last_name}
+                                </div>
+                            ))}
+                            {offlineUsers.map((user) => (
+                                <div 
+                                    key={user.id}
+                                    className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer opacity-60"
+                                >
+                                    <span className="mr-2 size-2 rounded-full bg-neutral-400"></span>
+                                    {user.first_name} {user.last_name}
+                                </div>
+                            ))}
+                        </>
+                    )}
+
+                    {activeTab === 'communities' && (
+                        <div className="px-2 py-1.5 text-base text-neutral-500">
+                            Communities coming soon
                         </div>
-                    ))}
-                    {offlineUsers.map((user) => (
-                        <div 
-                            key={user.id}
-                            className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer opacity-60"
-                        >
-                            <span className="mr-2 size-2 rounded-full bg-neutral-400"></span>
-                            {user.first_name} {user.last_name}
+                    )}
+
+                    {activeTab === 'call' && (
+                        <div className="px-2 py-1.5 text-base text-neutral-500">
+                            Call coming soon
                         </div>
-                    ))}
+                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
