@@ -165,7 +165,7 @@ export default function AuthLayout() {
             </button>
 
             {showInitials && (
-                <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
+                <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:static md:mt-auto md:mb-4">
                     {userInitials}
                 </div>
             )}
