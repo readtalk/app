@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -134,7 +134,7 @@ export default function AuthLayout() {
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="flex w-full items-center justify-center gap-8 border-b border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950">
+            <div className="flex w-full items-center justify-center gap-8 border-b border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative">
                 <button className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg bg-red-50 dark:bg-red-950">
                     <ChatCircleDots size={22} weight="fill" className="text-red-500" />
                     <span className="text-xs font-medium text-red-500">Chat</span>
@@ -151,6 +151,10 @@ export default function AuthLayout() {
                     <Phone size={22} className="text-neutral-500 dark:text-neutral-400" />
                     <span className="text-xs text-neutral-500 dark:text-neutral-400">Call</span>
                 </button>
+
+                <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
+                    {userInitials}
+                </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden">
@@ -162,9 +166,9 @@ export default function AuthLayout() {
                         <div><strong>READT</strong>alk</div>
                         <button
                             onClick={() => setShowThemeDropdown(!showThemeDropdown)}
-                            className="size-8 font-medium cursor-pointer bg-white dark:bg-neutral-900 hover:bg-neutral-200 hover:dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 transition-all rounded flex items-center justify-center"
+                            className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
                         >
-                            {userInitials}
+                            <DotsThree size={20} weight="bold" />
                         </button>
 
                         {showThemeDropdown && (
