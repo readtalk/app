@@ -133,7 +133,7 @@ export default function AuthLayout() {
 
     const isChatPage = location.pathname.startsWith('/channel/') && location.pathname !== '/channel/0';
 
-    const NavBar = () => (
+    const NavBar = ({ showInitials = false }: { showInitials?: boolean }) => (
         <div className="flex w-full items-center justify-center gap-8 border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative md:flex-col md:gap-2 md:py-4 md:h-full md:justify-start md:pt-4">
             <button
                 onClick={() => setActiveTab('chat')}
@@ -164,21 +164,21 @@ export default function AuthLayout() {
                 <span className={`text-xs ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
             </button>
 
-            <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:hidden">
-                {userInitials}
-            </div>
+            {showInitials && (
+                <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
+                    {userInitials}
+                </div>
+            )}
         </div>
     );
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="border-b border-neutral-200 dark:border-neutral-800 md:hidden">
-                <NavBar />
-            </div>
+            <div className="border-b border-neutral-200 dark:border-neutral-800 md:hidden" />
 
             <div className="flex flex-1 overflow-hidden">
                 <div className="hidden md:flex md:w-16 md:border-r md:border-neutral-200 md:dark:border-neutral-800">
-                    <NavBar />
+                    <NavBar showInitials={true} />
                 </div>
 
                 <div className={`
@@ -325,7 +325,7 @@ export default function AuthLayout() {
             </div>
 
             <div className="border-t border-neutral-200 dark:border-neutral-800 md:hidden">
-                <NavBar />
+                <NavBar showInitials={false} />
             </div>
         </div>
     );
