@@ -135,7 +135,7 @@ export default function AuthLayout() {
 
     return (
         <div className="flex flex-col h-screen">
-            <div className="flex w-full items-center justify-center gap-8 border-b border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative">
+            <div className={`w-full items-center justify-center gap-8 border-b border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative ${isChatPage ? 'hidden md:flex' : 'flex'}`}>
                 <button
                     onClick={() => setActiveTab('chat')}
                     className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'chat' ? 'bg-red-50 dark:bg-red-950' : ''}`}
