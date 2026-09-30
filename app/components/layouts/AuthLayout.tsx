@@ -324,7 +324,7 @@ export default function AuthLayout() {
                 </div>
             </div>
 
-            <div className="border-t border-neutral-200 dark:border-neutral-800 md:hidden">
+            <div className={`border-t border-neutral-200 dark:border-neutral-800 ${isChatPage ? 'hidden' : 'md:hidden'}`}>
                 <NavBar showInitials={false} />
             </div>
         </div>
