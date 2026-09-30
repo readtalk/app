@@ -176,7 +176,7 @@ export default function AuthLayout() {
                     w-full md:w-80 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
-                        <div><strong>READT</strong>alk</div>
+                        <div><strong>READTalk</strong>Messenger</div>
                         <button
                             onClick={() => setShowThemeDropdown(!showThemeDropdown)}
                             className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
