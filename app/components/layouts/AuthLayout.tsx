@@ -37,6 +37,7 @@ export default function AuthLayout() {
 
     const privateChannels = channels.filter(c => c.is_private);
     const groupChannels = channels.filter(c => !c.is_private);
+    const communityChannels = channels.filter(c => !c.is_private && c.name === c.description);
 
     useEffect(() => {
         const handleUserStatus = (message: any) => {
@@ -345,9 +346,46 @@ export default function AuthLayout() {
                     )}
 
                     {activeTab === 'communities' && (
-                        <div className="px-2 py-1.5 text-base text-neutral-500">
-                            Communities coming soon
-                        </div>
+                        <>
+                            <div className="px-2 mb-2 flex justify-between items-center">
+                                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
+                                    Communities
+                                </h2>
+                                <Plus 
+                                    size={16} 
+                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
+                                    onClick={() => {
+                                        openModal(<CreateChannelModal lockDescription={true} onClose={closeModal} />);
+                                    }}
+                                />
+                            </div>
+                            {isLoadingChannels ? (
+                                <div className="px-2 py-1.5 text-base text-neutral-500">Loading...</div>
+                            ) : (
+                                <>
+                                    {communityChannels.length === 0 ? (
+                                        <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                                            Not found
+                                        </div>
+                                    ) : (
+                                        communityChannels.map((channel) => (
+                                            <Link
+                                                key={channel.id}
+                                                to={`/channel/${channel.id}`}
+                                                className="flex flex-col px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                            >
+                                                <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
+                                                    {channel.name}
+                                                </span>
+                                                <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                                                    {channel.description}
+                                                </span>
+                                            </Link>
+                                        ))
+                                    )}
+                                </>
+                            )}
+                        </>
                     )}
 
                     {activeTab === 'call' && (
