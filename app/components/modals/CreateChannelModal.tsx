@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
 import { Lock } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type CreateChannelModalProps = {
   onClose: () => void;
+  lockDescription?: boolean;
 }
 
-export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
+export const CreateChannelModal = ({ onClose, lockDescription = false }: CreateChannelModalProps) => {
   const { users, addChannel } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [channelName, setChannelName] = useState('');
@@ -19,6 +20,12 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
 
   const otherSelectedCount = selectedUsers.filter(id => id !== currentUserId).length;
   const isSelectionLimited = isPrivate && otherSelectedCount >= 1;
+
+  useEffect(() => {
+    if (lockDescription) {
+      setDescription(channelName);
+    }
+  }, [channelName, lockDescription]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +89,8 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
+            disabled={lockDescription}
+            className={`w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 ${lockDescription ? 'cursor-not-allowed opacity-60' : ''}`}
             placeholder="What's this channel about?"
           />
         </div>
