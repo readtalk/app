@@ -5,14 +5,14 @@ import type { User } from '~/types/chat';
 
 type CreateChannelModalProps = {
   onClose: () => void;
-  lockDescription?: boolean;
+  lockedDescriptionValue?: string;
 }
 
-export const CreateChannelModal = ({ onClose, lockDescription = false }: CreateChannelModalProps) => {
+export const CreateChannelModal = ({ onClose, lockedDescriptionValue }: CreateChannelModalProps) => {
   const { users, addChannel } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [channelName, setChannelName] = useState('');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(lockedDescriptionValue ?? '');
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUserId]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +20,13 @@ export const CreateChannelModal = ({ onClose, lockDescription = false }: CreateC
 
   const otherSelectedCount = selectedUsers.filter(id => id !== currentUserId).length;
   const isSelectionLimited = isPrivate && otherSelectedCount >= 1;
+  const isDescriptionLocked = lockedDescriptionValue !== undefined;
 
   useEffect(() => {
-    if (lockDescription) {
-      setDescription(channelName);
+    if (isDescriptionLocked) {
+      setDescription(lockedDescriptionValue);
     }
-  }, [channelName, lockDescription]);
+  }, [lockedDescriptionValue, isDescriptionLocked]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,14 +84,14 @@ export const CreateChannelModal = ({ onClose, lockDescription = false }: CreateC
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            Description (optional)
+            Description
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={lockDescription}
-            className={`w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 ${lockDescription ? 'cursor-not-allowed opacity-60' : ''}`}
+            disabled={isDescriptionLocked}
+            className={`w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 ${isDescriptionLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             placeholder="What's this channel about?"
           />
         </div>
