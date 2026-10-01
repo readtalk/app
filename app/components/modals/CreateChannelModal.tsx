@@ -1,18 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
 import { Lock } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type CreateChannelModalProps = {
   onClose: () => void;
-  lockedDescriptionValue?: string;
 }
 
-export const CreateChannelModal = ({ onClose, lockedDescriptionValue }: CreateChannelModalProps) => {
+export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
   const { users, addChannel } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [channelName, setChannelName] = useState('');
-  const [description, setDescription] = useState(lockedDescriptionValue ?? '');
+  const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUserId]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,13 +19,6 @@ export const CreateChannelModal = ({ onClose, lockedDescriptionValue }: CreateCh
 
   const otherSelectedCount = selectedUsers.filter(id => id !== currentUserId).length;
   const isSelectionLimited = isPrivate && otherSelectedCount >= 1;
-  const isDescriptionLocked = lockedDescriptionValue !== undefined;
-
-  useEffect(() => {
-    if (isDescriptionLocked) {
-      setDescription(lockedDescriptionValue);
-    }
-  }, [lockedDescriptionValue, isDescriptionLocked]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,14 +76,13 @@ export const CreateChannelModal = ({ onClose, lockedDescriptionValue }: CreateCh
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            Description
+            Description (optional)
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            disabled={isDescriptionLocked}
-            className={`w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 ${isDescriptionLocked ? 'cursor-not-allowed opacity-60' : ''}`}
+            className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
             placeholder="What's this channel about?"
           />
         </div>
