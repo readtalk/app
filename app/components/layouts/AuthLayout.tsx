@@ -1,4 +1,3 @@
-//
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree } from "@phosphor-icons/react";
@@ -259,7 +258,7 @@ export default function AuthLayout() {
                                 <>
                                     <div className="px-2 mt-2 mb-1">
                                         <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
-                                            Private List
+                                            Private
                                         </h3>
                                     </div>
                                     {privateChannels.length === 0 ? (
@@ -285,7 +284,7 @@ export default function AuthLayout() {
 
                                     <div className="px-2 mt-4 mb-1">
                                         <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
-                                            Group List
+                                            Group
                                         </h3>
                                     </div>
                                     {groupChannels.length === 0 ? (
