@@ -263,7 +263,7 @@ export default function AuthLayout() {
                                     </div>
                                     {privateChannels.length === 0 ? (
                                         <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
-                                            No private chats
+                                            Not found
                                         </div>
                                     ) : (
                                         privateChannels.map((channel) => (
@@ -289,7 +289,7 @@ export default function AuthLayout() {
                                     </div>
                                     {groupChannels.length === 0 ? (
                                         <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
-                                            No groups
+                                            Not found
                                         </div>
                                     ) : (
                                         groupChannels.map((channel) => (
