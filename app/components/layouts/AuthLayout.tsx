@@ -35,6 +35,9 @@ export default function AuthLayout() {
         return '?';
     }, [users]);
 
+    const privateChannels = channels.filter(c => c.is_private);
+    const groupChannels = channels.filter(c => !c.is_private);
+
     useEffect(() => {
         const handleUserStatus = (message: any) => {
             if (message.type === 'USER_CONNECTED' || message.type === 'USER_DISCONNECTED') {
@@ -252,24 +255,59 @@ export default function AuthLayout() {
                             {isLoadingChannels ? (
                                 <div className="px-2 py-1.5 text-base text-neutral-500">Loading channels...</div>
                             ) : (
-                                channels.map((channel) => (
-                                    <Link
-                                        key={channel.id}
-                                        to={`/channel/${channel.id}`}
-                                        className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                                    >
-                                        <div className="flex items-center flex-1">
-                                            {channel.is_private ? (
-                                                <Lock size={14} className="mr-2" />
-                                            ) : (
-                                                <span className="mr-2">#</span>
-                                            )}
-                                            <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                                {channel.name}
-                                            </span>
+                                <>
+                                    <div className="px-2 mt-2 mb-1">
+                                        <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
+                                            Private List
+                                        </h3>
+                                    </div>
+                                    {privateChannels.length === 0 ? (
+                                        <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                                            No private chats
                                         </div>
-                                    </Link>
-                                ))
+                                    ) : (
+                                        privateChannels.map((channel) => (
+                                            <Link
+                                                key={channel.id}
+                                                to={`/channel/${channel.id}`}
+                                                className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                            >
+                                                <div className="flex items-center flex-1">
+                                                    <Lock size={14} className="mr-2" />
+                                                    <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
+                                                        {channel.name}
+                                                    </span>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    )}
+
+                                    <div className="px-2 mt-4 mb-1">
+                                        <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
+                                            Group List
+                                        </h3>
+                                    </div>
+                                    {groupChannels.length === 0 ? (
+                                        <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                                            No groups
+                                        </div>
+                                    ) : (
+                                        groupChannels.map((channel) => (
+                                            <Link
+                                                key={channel.id}
+                                                to={`/channel/${channel.id}`}
+                                                className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                            >
+                                                <div className="flex items-center flex-1">
+                                                    <span className="mr-2">#</span>
+                                                    <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
+                                                        {channel.name}
+                                                    </span>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    )}
+                                </>
                             )}
                         </>
                     )}
