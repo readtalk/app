@@ -1,4 +1,3 @@
-//
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree } from "@phosphor-icons/react";
@@ -37,8 +36,8 @@ export default function AuthLayout() {
     }, [users]);
 
     const privateChannels = channels.filter(c => c.is_private);
-    const groupChannels = channels.filter(c => !c.is_private);
-    const communityChannels = channels.filter(c => !c.is_private && c.name === c.description);
+    const chatGroupChannels = channels.filter(c => !c.is_private && c.name !== c.description);
+    const communityParents = channels.filter(c => !c.is_private && c.name === c.description);
 
     useEffect(() => {
         const handleUserStatus = (message: any) => {
@@ -289,12 +288,12 @@ export default function AuthLayout() {
                                             Group List
                                         </h3>
                                     </div>
-                                    {groupChannels.length === 0 ? (
+                                    {chatGroupChannels.length === 0 ? (
                                         <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
                                             Not found
                                         </div>
                                     ) : (
-                                        groupChannels.map((channel) => (
+                                        chatGroupChannels.map((channel) => (
                                             <Link
                                                 key={channel.id}
                                                 to={`/channel/${channel.id}`}
@@ -348,43 +347,55 @@ export default function AuthLayout() {
 
                     {activeTab === 'communities' && (
                         <>
-                            <div className="px-2 mb-2 flex justify-between items-center">
-                                <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
-                                    Communities
-                                </h2>
-                                <Plus 
-                                    size={16} 
-                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
-                                    onClick={() => {
-                                        openModal(<CreateChannelModal lockDescription={true} onClose={closeModal} />);
-                                    }}
-                                />
-                            </div>
                             {isLoadingChannels ? (
                                 <div className="px-2 py-1.5 text-base text-neutral-500">Loading...</div>
+                            ) : communityParents.length === 0 ? (
+                                <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                                    Not found
+                                </div>
                             ) : (
-                                <>
-                                    {communityChannels.length === 0 ? (
-                                        <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
-                                            Not found
+                                communityParents.map((parent) => {
+                                    const children = channels.filter(
+                                        c => !c.is_private && c.name !== c.description && c.description === parent.name
+                                    );
+
+                                    return (
+                                        <div key={parent.id} className="mb-4">
+                                            <div className="px-2 mb-1 flex justify-between items-center">
+                                                <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
+                                                    {parent.name}
+                                                </h3>
+                                                <Plus
+                                                    size={16}
+                                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
+                                                    onClick={() => {
+                                                        openModal(<CreateChannelModal lockedDescriptionValue={parent.name} onClose={closeModal} />);
+                                                    }}
+                                                />
+                                            </div>
+                                            {children.length === 0 ? (
+                                                <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
+                                                    Not found
+                                                </div>
+                                            ) : (
+                                                children.map((channel) => (
+                                                    <Link
+                                                        key={channel.id}
+                                                        to={`/channel/${channel.id}`}
+                                                        className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                                    >
+                                                        <div className="flex items-center flex-1">
+                                                            <span className="mr-2">#</span>
+                                                            <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
+                                                                {channel.name}
+                                                            </span>
+                                                        </div>
+                                                    </Link>
+                                                ))
+                                            )}
                                         </div>
-                                    ) : (
-                                        communityChannels.map((channel) => (
-                                            <Link
-                                                key={channel.id}
-                                                to={`/channel/${channel.id}`}
-                                                className="flex flex-col px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                                            >
-                                                <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                                    {channel.name}
-                                                </span>
-                                                <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                                                    {channel.description}
-                                                </span>
-                                            </Link>
-                                        ))
-                                    )}
-                                </>
+                                    );
+                                })
                             )}
                         </>
                     )}
