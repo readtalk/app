@@ -36,8 +36,7 @@ export default function AuthLayout() {
     }, [users]);
 
     const privateChannels = channels.filter(c => c.is_private);
-    const chatGroupChannels = channels.filter(c => !c.is_private && c.name !== c.description);
-    const communityParents = channels.filter(c => !c.is_private && c.name === c.description);
+    const groupChannels = channels.filter(c => !c.is_private);
 
     useEffect(() => {
         const handleUserStatus = (message: any) => {
@@ -288,12 +287,12 @@ export default function AuthLayout() {
                                             Group List
                                         </h3>
                                     </div>
-                                    {chatGroupChannels.length === 0 ? (
+                                    {groupChannels.length === 0 ? (
                                         <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
                                             Not found
                                         </div>
                                     ) : (
-                                        chatGroupChannels.map((channel) => (
+                                        groupChannels.map((channel) => (
                                             <Link
                                                 key={channel.id}
                                                 to={`/channel/${channel.id}`}
@@ -346,58 +345,9 @@ export default function AuthLayout() {
                     )}
 
                     {activeTab === 'communities' && (
-                        <>
-                            {isLoadingChannels ? (
-                                <div className="px-2 py-1.5 text-base text-neutral-500">Loading...</div>
-                            ) : communityParents.length === 0 ? (
-                                <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
-                                    Not found
-                                </div>
-                            ) : (
-                                communityParents.map((parent) => {
-                                    const children = channels.filter(
-                                        c => !c.is_private && c.name !== c.description && c.description === parent.name
-                                    );
-
-                                    return (
-                                        <div key={parent.id} className="mb-4">
-                                            <div className="px-2 mb-1 flex justify-between items-center">
-                                                <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
-                                                    {parent.name}
-                                                </h3>
-                                                <Plus
-                                                    size={16}
-                                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        openModal(<CreateChannelModal lockedDescriptionValue={parent.name} onClose={closeModal} />);
-                                                    }}
-                                                />
-                                            </div>
-                                            {children.length === 0 ? (
-                                                <div className="px-2 py-1.5 text-sm text-neutral-400 dark:text-neutral-500">
-                                                    Not found
-                                                </div>
-                                            ) : (
-                                                children.map((channel) => (
-                                                    <Link
-                                                        key={channel.id}
-                                                        to={`/channel/${channel.id}`}
-                                                        className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                                                    >
-                                                        <div className="flex items-center flex-1">
-                                                            <span className="mr-2">#</span>
-                                                            <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                                                {channel.name}
-                                                            </span>
-                                                        </div>
-                                                    </Link>
-                                                ))
-                                            )}
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </>
+                        <div className="px-2 py-1.5 text-base text-neutral-500">
+                            Communities coming soon
+                        </div>
                     )}
 
                     {activeTab === 'call' && (
