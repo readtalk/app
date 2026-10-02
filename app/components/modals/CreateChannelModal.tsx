@@ -157,7 +157,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
           <button
             type="submit"
             disabled={isLoading || !channelName.trim()}
-            className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Creating...' : 'Create Channel'}
           </button>
