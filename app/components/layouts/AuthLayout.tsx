@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -11,7 +11,7 @@ export default function AuthLayout() {
     const { channels, onlineUsers, offlineUsers, isLoadingChannels, users, updateUserStatus } = useChatContext();
     const { addMessageListener, removeMessageListener } = useWebSocket();
     const [showThemeDropdown, setShowThemeDropdown] = useState(false);
-    const [activeTab, setActiveTab] = useState<'chat' | 'update' | 'communities' | 'call'>('chat');
+    const [activeTab, setActiveTab] = useState<'chat' | 'update' | 'communities' | 'call' | 'settings'>('chat');
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
             const savedTheme = localStorage.getItem('theme');
@@ -168,9 +168,17 @@ export default function AuthLayout() {
             </button>
 
             {showInitials && (
-                <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:static md:mt-auto md:mb-4">
-                    {userInitials}
-                </div>
+                <>
+                    <button
+                        onClick={() => setActiveTab('settings')}
+                        className={`hidden md:flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg mt-auto ${activeTab === 'settings' ? 'bg-red-50 dark:bg-red-950' : ''}`}
+                    >
+                        <Gear size={22} weight={activeTab === 'settings' ? 'fill' : 'regular'} className={activeTab === 'settings' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                    </button>
+                    <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:static md:mb-4">
+                        {userInitials}
+                    </div>
+                </>
             )}
         </div>
     );
@@ -212,6 +220,19 @@ export default function AuthLayout() {
                         {showThemeDropdown && (
                             <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 z-50">
                                 <div className="py-1">
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('settings');
+                                            setShowThemeDropdown(false);
+                                        }}
+                                        className="flex md:hidden items-center px-4 py-2 text-base w-full hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    >
+                                        <Gear size={16} className="mr-2" />
+                                        Settings
+                                    </button>
+
+                                    <div className="md:hidden h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
+
                                     <Link
                                         to="/profile"
                                         className="flex items-center px-4 py-2 text-base w-full hover:bg-neutral-100 dark:hover:bg-neutral-700"
@@ -367,6 +388,12 @@ export default function AuthLayout() {
                     {activeTab === 'call' && (
                         <div className="px-2 py-1.5 text-base text-neutral-500">
                             Call coming soon
+                        </div>
+                    )}
+
+                    {activeTab === 'settings' && (
+                        <div className="px-2 py-1.5 text-base text-neutral-500">
+                            Settings
                         </div>
                     )}
                 </div>
