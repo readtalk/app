@@ -150,29 +150,29 @@ export default function AuthLayout() {
                 onClick={() => setActiveTab('chat')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'chat' ? 'bg-red-50 dark:bg-red-950' : ''}`}
             >
-                <ChatCircleDots size={22} weight={activeTab === 'chat' ? 'fill' : 'regular'} className={activeTab === 'chat' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'chat' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Chat</span>
+                <ChatCircleDots size={28} weight={activeTab === 'chat' ? 'fill' : 'regular'} className={activeTab === 'chat' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                <span className={`text-xs md:hidden ${activeTab === 'chat' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Chat</span>
             </button>
             <button
                 onClick={() => setActiveTab('update')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'update' ? 'bg-red-50 dark:bg-red-950' : ''}`}
             >
-                <Camera size={22} weight={activeTab === 'update' ? 'fill' : 'regular'} className={activeTab === 'update' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'update' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Update</span>
+                <Camera size={28} weight={activeTab === 'update' ? 'fill' : 'regular'} className={activeTab === 'update' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                <span className={`text-xs md:hidden ${activeTab === 'update' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Update</span>
             </button>
             <button
                 onClick={() => setActiveTab('communities')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'communities' ? 'bg-red-50 dark:bg-red-950' : ''}`}
             >
-                <UsersThree size={22} weight={activeTab === 'communities' ? 'fill' : 'regular'} className={activeTab === 'communities' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'communities' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Communities</span>
+                <UsersThree size={28} weight={activeTab === 'communities' ? 'fill' : 'regular'} className={activeTab === 'communities' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                <span className={`text-xs md:hidden ${activeTab === 'communities' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Communities</span>
             </button>
             <button
                 onClick={() => setActiveTab('call')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg ${activeTab === 'call' ? 'bg-red-50 dark:bg-red-950' : ''}`}
             >
-                <Phone size={22} weight={activeTab === 'call' ? 'fill' : 'regular'} className={activeTab === 'call' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
-                <span className={`text-xs ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
+                <Phone size={28} weight={activeTab === 'call' ? 'fill' : 'regular'} className={activeTab === 'call' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                <span className={`text-xs md:hidden ${activeTab === 'call' ? 'font-medium text-red-500' : 'text-neutral-500 dark:text-neutral-400'}`}>Call</span>
             </button>
 
             {showInitials && (
@@ -181,7 +181,7 @@ export default function AuthLayout() {
                         onClick={() => setActiveTab('settings')}
                         className={`hidden md:flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg mt-auto ${activeTab === 'settings' ? 'bg-red-50 dark:bg-red-950' : ''}`}
                     >
-                        <Gear size={22} weight={activeTab === 'settings' ? 'fill' : 'regular'} className={activeTab === 'settings' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
+                        <Gear size={28} weight={activeTab === 'settings' ? 'fill' : 'regular'} className={activeTab === 'settings' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
                     </button>
                     <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:static md:mb-4">
                         {userInitials}
