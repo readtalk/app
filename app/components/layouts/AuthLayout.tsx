@@ -190,12 +190,24 @@ export default function AuthLayout() {
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
                         <div><strong>READT</strong>alk</div>
-                        <button
-                            onClick={() => setShowThemeDropdown(!showThemeDropdown)}
-                            className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
-                        >
-                            <DotsThree size={20} weight="bold" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                            {activeTab === 'chat' && (
+                                <button
+                                    onClick={() => {
+                                        openModal(<CreateChannelModal onClose={closeModal} />);
+                                    }}
+                                    className="hidden md:flex p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
+                                >
+                                    <Plus size={20} weight="bold" />
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+                                className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
+                            >
+                                <DotsThree size={20} weight="bold" />
+                            </button>
+                        </div>
 
                         {showThemeDropdown && (
                             <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 z-50">
@@ -240,17 +252,10 @@ export default function AuthLayout() {
 
                     {activeTab === 'chat' && (
                         <>
-                            <div className="px-2 mb-2 flex justify-between items-center">
+                            <div className="px-2 mb-2">
                                 <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
                                     Channels
                                 </h2>
-                                <Plus 
-                                    size={16} 
-                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
-                                    onClick={() => {
-                                        openModal(<CreateChannelModal onClose={closeModal} />);
-                                    }}
-                                />
                             </div>
                             {isLoadingChannels ? (
                                 <div className="px-2 py-1.5 text-base text-neutral-500">Loading channels...</div>
@@ -309,6 +314,15 @@ export default function AuthLayout() {
                                     )}
                                 </>
                             )}
+
+                            <button
+                                onClick={() => {
+                                    openModal(<CreateChannelModal onClose={closeModal} />);
+                                }}
+                                className="md:hidden fixed bottom-24 right-6 size-14 rounded-full bg-red-500 text-white shadow-lg flex items-center justify-center hover:bg-red-600 z-40"
+                            >
+                                <Plus size={24} weight="bold" />
+                            </button>
                         </>
                     )}
 
