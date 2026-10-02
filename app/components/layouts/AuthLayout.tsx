@@ -218,7 +218,7 @@ export default function AuthLayout() {
                     w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
-                        <div className="text-2xl">
+                        <div className="text-3xl">
                             {activeTab === 'chat' ? (
                                 <span className="text-[#FF0000]"><strong>READT</strong>alk</span>
                             ) : (
