@@ -38,6 +38,19 @@ export default function AuthLayout() {
     const privateChannels = channels.filter(c => c.is_private);
     const groupChannels = channels.filter(c => !c.is_private);
 
+    const getChannelColor = (name: string) => {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const h = Math.abs(hash % 360);
+        return `hsl(${h}, 70%, 50%)`;
+    };
+
+    const getChannelInitials = (name: string) => {
+        return name.slice(0, 2).toUpperCase();
+    };
+
     useEffect(() => {
         const handleUserStatus = (message: any) => {
             if (message.type === 'USER_CONNECTED' || message.type === 'USER_DISCONNECTED') {
@@ -205,11 +218,11 @@ export default function AuthLayout() {
                     w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
-                        <div>
+                        <div className="text-xl">
                             {activeTab === 'chat' ? (
-                                <><strong>READT</strong>alk</>
+                                <span className="text-[#FF0000]"><strong>READT</strong>alk</span>
                             ) : (
-                                tabTitle
+                                <span className="font-semibold">{tabTitle}</span>
                             )}
                         </div>
                         <div className="flex items-center gap-1">
@@ -315,20 +328,31 @@ export default function AuthLayout() {
                                             Not found
                                         </div>
                                     ) : (
-                                        privateChannels.map((channel) => (
-                                            <Link
-                                                key={channel.id}
-                                                to={`/channel/${channel.id}`}
-                                                className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                                            >
-                                                <div className="flex items-center flex-1">
-                                                    <Lock size={14} className="mr-2" />
-                                                    <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                                        {channel.name}
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))
+                                        privateChannels.map((channel) => {
+                                            const color = getChannelColor(channel.name);
+                                            return (
+                                                <Link
+                                                    key={channel.id}
+                                                    to={`/channel/${channel.id}`}
+                                                    className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                                                >
+                                                    <div
+                                                        className="size-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium"
+                                                        style={{ backgroundColor: color }}
+                                                    >
+                                                        {getChannelInitials(channel.name)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className={`truncate ${unreadChannels.has(channel.id) ? 'font-bold' : 'font-medium'} text-neutral-900 dark:text-neutral-100`}>
+                                                            {channel.name}
+                                                        </div>
+                                                        <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
+                                                            {channel.description || 'Private chat'}
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })
                                     )}
 
                                     <div className="px-2 mt-4 mb-1">
@@ -341,20 +365,31 @@ export default function AuthLayout() {
                                             Not found
                                         </div>
                                     ) : (
-                                        groupChannels.map((channel) => (
-                                            <Link
-                                                key={channel.id}
-                                                to={`/channel/${channel.id}`}
-                                                className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
-                                            >
-                                                <div className="flex items-center flex-1">
-                                                    <span className="mr-2">#</span>
-                                                    <span className={unreadChannels.has(channel.id) ? 'font-bold' : ''}>
-                                                        {channel.name}
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))
+                                        groupChannels.map((channel) => {
+                                            const color = getChannelColor(channel.name);
+                                            return (
+                                                <Link
+                                                    key={channel.id}
+                                                    to={`/channel/${channel.id}`}
+                                                    className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                                                >
+                                                    <div
+                                                        className="size-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium"
+                                                        style={{ backgroundColor: color }}
+                                                    >
+                                                        {getChannelInitials(channel.name)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className={`truncate ${unreadChannels.has(channel.id) ? 'font-bold' : 'font-medium'} text-neutral-900 dark:text-neutral-100`}>
+                                                            {channel.name}
+                                                        </div>
+                                                        <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
+                                                            {channel.description || 'Group chat'}
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })
                                     )}
                                 </>
                             )}
