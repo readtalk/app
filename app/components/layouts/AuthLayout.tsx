@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -136,6 +136,14 @@ export default function AuthLayout() {
 
     const isChatPage = location.pathname.startsWith('/channel/') && location.pathname !== '/channel/0';
 
+    const tabTitle = {
+        chat: 'READTalk',
+        update: 'Update',
+        communities: 'Communities',
+        call: 'Call',
+        settings: 'Settings',
+    }[activeTab];
+
     const NavBar = ({ showInitials = false }: { showInitials?: boolean }) => (
         <div className="flex w-full items-center justify-center gap-8 border-neutral-200 bg-neutral-50 py-2 transition-colors dark:border-neutral-800 dark:bg-neutral-950 relative md:flex-col md:gap-2 md:py-4 md:h-full md:justify-start md:pt-4">
             <button
@@ -197,7 +205,13 @@ export default function AuthLayout() {
                     w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
-                        <div><strong>READT</strong>alk</div>
+                        <div>
+                            {activeTab === 'chat' ? (
+                                <><strong>READT</strong>alk</>
+                            ) : (
+                                tabTitle
+                            )}
+                        </div>
                         <div className="flex items-center gap-1">
                             {activeTab === 'chat' && (
                                 <button
@@ -209,15 +223,24 @@ export default function AuthLayout() {
                                     <Plus size={20} weight="bold" />
                                 </button>
                             )}
-                            <button
-                                onClick={() => setShowThemeDropdown(!showThemeDropdown)}
-                                className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
-                            >
-                                <DotsThree size={20} weight="bold" />
-                            </button>
+                            {activeTab === 'settings' ? (
+                                <button
+                                    onClick={() => setActiveTab('chat')}
+                                    className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
+                                >
+                                    <ArrowLeft size={20} weight="bold" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+                                    className="p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
+                                >
+                                    <DotsThree size={20} weight="bold" />
+                                </button>
+                            )}
                         </div>
 
-                        {showThemeDropdown && (
+                        {showThemeDropdown && activeTab !== 'settings' && (
                             <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 z-50">
                                 <div className="py-1">
                                     <button
