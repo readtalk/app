@@ -186,7 +186,7 @@ export default function AuthLayout() {
 
                 <div className={`
                     ${isChatPage ? 'hidden md:block' : 'block'} 
-                    w-full md:w-80 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
+                    w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
                         <div><strong>READT</strong>alk</div>
