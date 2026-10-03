@@ -58,6 +58,30 @@ export default function AuthLayout() {
         return name.slice(0, 2).toUpperCase();
     };
 
+    const renderUserAvatar = (size: string) => {
+        if (currentUser?.avatar) {
+            return (
+                <img
+                    src={currentUser.avatar}
+                    alt={userInitials}
+                    className={`${size} rounded-full flex-shrink-0 object-cover`}
+                />
+            );
+        }
+        return (
+            <div
+                className={`${size} rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium`}
+                style={{
+                    backgroundColor: currentUser
+                        ? getChannelColor(`${currentUser.first_name} ${currentUser.last_name}`)
+                        : '#888'
+                }}
+            >
+                {userInitials}
+            </div>
+        );
+    };
+
     useEffect(() => {
         const handleUserStatus = (message: any) => {
             if (message.type === 'USER_CONNECTED' || message.type === 'USER_DISCONNECTED') {
@@ -203,8 +227,18 @@ export default function AuthLayout() {
                     >
                         <Gear size={28} weight={activeTab === 'settings' ? 'fill' : 'regular'} className={activeTab === 'settings' ? 'text-red-500' : 'text-neutral-500 dark:text-neutral-400'} />
                     </button>
-                    <div className="absolute right-4 size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm md:static md:mb-4">
-                        {userInitials}
+                    <div className="absolute right-4 md:static md:mb-4">
+                        {currentUser?.avatar ? (
+                            <img
+                                src={currentUser.avatar}
+                                alt={userInitials}
+                                className="size-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-800"
+                            />
+                        ) : (
+                            <div className="size-8 font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded flex items-center justify-center text-sm">
+                                {userInitials}
+                            </div>
+                        )}
                     </div>
                 </>
             )}
@@ -464,16 +498,7 @@ export default function AuthLayout() {
                                 onClick={() => openModal(<ProfileModal onClose={closeModal} />)}
                                 className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                             >
-                                <div
-                                    className="size-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium text-lg"
-                                    style={{
-                                        backgroundColor: currentUser
-                                            ? getChannelColor(`${currentUser.first_name} ${currentUser.last_name}`)
-                                            : '#888'
-                                    }}
-                                >
-                                    {userInitials}
-                                </div>
+                                {renderUserAvatar("size-14")}
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="truncate font-medium text-neutral-900 dark:text-neutral-100">
                                         {currentUser
