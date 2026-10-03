@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft, UserCircle, Bell, Palette, Globe, Question } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -33,6 +33,12 @@ export default function AuthLayout() {
             return `${currentUser.first_name[0]}${currentUser.last_name[0]}`.toUpperCase();
         }
         return '?';
+    }, [users]);
+
+    const currentUser = useMemo(() => {
+        if (typeof window === 'undefined') return null;
+        const userId = localStorage.getItem('userId');
+        return users.find(user => user.id === userId) || null;
     }, [users]);
 
     const privateChannels = channels.filter(c => c.is_private);
@@ -450,9 +456,78 @@ export default function AuthLayout() {
                     )}
 
                     {activeTab === 'settings' && (
-                        <div className="px-2 py-1.5 text-base text-neutral-500">
-                            Settings
-                        </div>
+                        <>
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                            >
+                                <div
+                                    className="size-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium text-lg"
+                                    style={{
+                                        backgroundColor: currentUser
+                                            ? getChannelColor(`${currentUser.first_name} ${currentUser.last_name}`)
+                                            : '#888'
+                                    }}
+                                >
+                                    {userInitials}
+                                </div>
+                                <div className="flex-1 min-w-0 text-left">
+                                    <div className="truncate font-medium text-neutral-900 dark:text-neutral-100">
+                                        {currentUser
+                                            ? `${currentUser.first_name} ${currentUser.last_name}`
+                                            : 'User'}
+                                    </div>
+                                    <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
+                                        {currentUser?.email || ''}
+                                    </div>
+                                </div>
+                            </button>
+
+                            <div className="mt-4 space-y-1">
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                                >
+                                    <UserCircle size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-neutral-900 dark:text-neutral-100">Profile</div>
+                                        <div className="text-sm text-neutral-500 dark:text-neutral-400">Name, profile picture, username</div>
+                                    </div>
+                                </button>
+
+                                <button className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer">
+                                    <Bell size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-neutral-900 dark:text-neutral-100">Notifications</div>
+                                        <div className="text-sm text-neutral-500 dark:text-neutral-400">Message, group & call tones</div>
+                                    </div>
+                                </button>
+
+                                <button className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer">
+                                    <Palette size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-neutral-900 dark:text-neutral-100">Appearance</div>
+                                        <div className="text-sm text-neutral-500 dark:text-neutral-400">Theme, wallpaper, chat settings</div>
+                                    </div>
+                                </button>
+
+                                <button className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer">
+                                    <Globe size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-neutral-900 dark:text-neutral-100">App language</div>
+                                        <div className="text-sm text-neutral-500 dark:text-neutral-400">English</div>
+                                    </div>
+                                </button>
+
+                                <button className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer">
+                                    <Question size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-neutral-900 dark:text-neutral-100">Help and feedback</div>
+                                        <div className="text-sm text-neutral-500 dark:text-neutral-400">Help centre, contact us, privacy policy</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </>
                     )}
                 </div>
 
