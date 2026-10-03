@@ -5,6 +5,7 @@ import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
 import { CreateChannelModal } from '~/components/modals/CreateChannelModal';
+import { ProfileModal } from '~/components/modals/ProfileModal';
 
 export default function AuthLayout() {
     const location = useLocation();
@@ -275,14 +276,16 @@ export default function AuthLayout() {
 
                                     <div className="md:hidden h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
 
-                                    <Link
-                                        to="/profile"
+                                    <button
+                                        onClick={() => {
+                                            openModal(<ProfileModal onClose={closeModal} />);
+                                            setShowThemeDropdown(false);
+                                        }}
                                         className="flex items-center px-4 py-2 text-base w-full hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                        onClick={() => setShowThemeDropdown(false)}
                                     >
                                         <User size={16} className="mr-2" />
                                         Profile
-                                    </Link>
+                                    </button>
 
                                     <div className="h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
 
@@ -458,7 +461,7 @@ export default function AuthLayout() {
                     {activeTab === 'settings' && (
                         <>
                             <button
-                                onClick={() => navigate('/profile')}
+                                onClick={() => openModal(<ProfileModal onClose={closeModal} />)}
                                 className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                             >
                                 <div
@@ -485,7 +488,7 @@ export default function AuthLayout() {
 
                             <div className="mt-4 space-y-1">
                                 <button
-                                    onClick={() => navigate('/profile')}
+                                    onClick={() => openModal(<ProfileModal onClose={closeModal} />)}
                                     className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                                 >
                                     <UserCircle size={24} className="text-neutral-500 dark:text-neutral-400 flex-shrink-0" />
