@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft, UserCircle, Bell, Palette, Globe, Question } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft, UserCircle, Bell, Palette, Globe, Question, ShareNetwork } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -141,6 +141,21 @@ export default function AuthLayout() {
 
     const toggleTheme = (newTheme: 'light' | 'dark') => {
         setTheme(newTheme);
+        setShowThemeDropdown(false);
+    };
+
+    const handleShare = async () => {
+        if (!currentUser?.username) return;
+        const url = `https://app.readtalk.workers.dev/@${currentUser.username}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({ url });
+            } catch {
+                // user cancelled
+            }
+        } else {
+            await navigator.clipboard.writeText(url);
+        }
         setShowThemeDropdown(false);
     };
 
@@ -311,14 +326,11 @@ export default function AuthLayout() {
                                     <div className="md:hidden h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
 
                                     <button
-                                        onClick={() => {
-                                            openModal(<ProfileModal onClose={closeModal} />);
-                                            setShowThemeDropdown(false);
-                                        }}
+                                        onClick={handleShare}
                                         className="flex items-center px-4 py-2 text-base w-full hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                     >
-                                        <User size={16} className="mr-2" />
-                                        Profile
+                                        <ShareNetwork size={16} className="mr-2" />
+                                        Share
                                     </button>
 
                                     <div className="h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
@@ -336,14 +348,6 @@ export default function AuthLayout() {
                                     >
                                         <Moon size={16} className="mr-2" />
                                         Dark
-                                    </button>
-                                    <div className="h-px bg-neutral-200 dark:bg-neutral-700 my-1" />
-                                    <button
-                                        onClick={handleSignOut}
-                                        className="flex items-center px-4 py-2 text-base w-full text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                    >
-                                        <SignOut size={16} className="mr-2" />
-                                        Sign out
                                     </button>
                                 </div>
                             </div>
@@ -552,6 +556,18 @@ export default function AuthLayout() {
                                     <div className="flex-1 min-w-0 text-left">
                                         <div className="font-medium text-neutral-900 dark:text-neutral-100">Help and feedback</div>
                                         <div className="text-sm text-neutral-500 dark:text-neutral-400">Help centre, contact us, privacy policy</div>
+                                    </div>
+                                </button>
+
+                                <div className="h-px bg-neutral-200 dark:bg-neutral-700 my-2" />
+
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
+                                >
+                                    <SignOut size={24} className="text-red-500 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <div className="font-medium text-red-500">Sign out</div>
                                     </div>
                                 </button>
                             </div>
