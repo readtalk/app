@@ -1,5 +1,5 @@
 import { useLoaderData } from "react-router-dom";
-import { BlueSkyLogo, FacebookLogo, InstagramLogo, TiktokLogo, XLogo, YoutubeLogo, LinkedinLogo } from "@phosphor-icons/react";
+import { FacebookLogo, InstagramLogo, TiktokLogo, XLogo, YoutubeLogo, LinkedinLogo } from "@phosphor-icons/react";
 import type { Route } from "./+types/shared";
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -42,6 +42,19 @@ export function meta({ data }: Route.MetaArgs) {
         { property: "og:type", content: "profile" },
     ];
 }
+
+const BlueSkyLogo = ({ size = 28, className = "" }: { size?: number; className?: string }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path d="M5.76537 7.01986C8.00566 8.70223 10.4166 12.1083 12 14.7675C13.5834 12.1083 15.9943 8.70223 18.2346 7.01986C19.8513 5.80651 22 4.92272 22 7.01986C22 7.42966 21.7649 10.1962 21.6369 10.5148C20.7999 12.8826 18.3087 13.4825 16.0844 13.1204C19.7118 13.7371 20.6294 15.9136 18.5524 18.0901C14.6345 22.1923 12.9286 17.0172 12.5263 15.751C12.4526 15.5213 12.4184 15.4142 12 15.4142C11.5816 15.4142 11.5474 15.5213 11.4737 15.751C11.0714 17.0172 9.36553 22.1923 5.44756 18.0901C3.37062 15.9136 4.28817 13.7371 7.91557 13.1204C5.69131 13.4825 3.20007 12.8826 2.36312 10.5148C2.23512 10.1962 2 7.42966 2 7.01986C2 4.92272 4.14868 5.80651 5.76537 7.01986Z" />
+    </svg>
+);
 
 const socialsMap: Record<string, { label: string; icon: any; url: (u: string) => string }> = {
     bluesky: { label: "BlueSky", icon: BlueSkyLogo, url: (u) => `https://bsky.app/profile/${u}` },
