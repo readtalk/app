@@ -2,10 +2,31 @@ import { useState, useEffect } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
 import { Input } from '~/components/input/Input';
 import { Label } from '~/components/label/Label';
+import type { Socials } from '~/types/chat';
 
 type ProfileModalProps = {
   onClose: () => void;
 }
+
+const emptySocials: Socials = {
+  bluesky: '',
+  facebook: '',
+  instagram: '',
+  tiktok: '',
+  x: '',
+  youtube: '',
+  linkedin: '',
+};
+
+const socialFields: { key: keyof Socials; label: string }[] = [
+  { key: 'bluesky', label: 'BlueSky' },
+  { key: 'facebook', label: 'Facebook' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'tiktok', label: 'TikTok' },
+  { key: 'x', label: 'X' },
+  { key: 'youtube', label: 'YouTube' },
+  { key: 'linkedin', label: 'LinkedIn' },
+];
 
 export const ProfileModal = ({ onClose }: ProfileModalProps) => {
   const { users } = useChatContext();
@@ -14,6 +35,8 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [avatar, setAvatar] = useState('');
+  const [bio, setBio] = useState('');
+  const [socials, setSocials] = useState<Socials>(emptySocials);
   const [usernameUpdatedAt, setUsernameUpdatedAt] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +51,18 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
         setUsername(user.username || '');
         setEmail(user.email || '');
         setAvatar(user.avatar || '');
+        setBio(user.bio || '');
+        setSocials({ ...emptySocials, ...(user.socials || {}) });
         setUsernameUpdatedAt(user.username_updated_at ?? null);
       } catch (e) {
         console.error('Failed to parse user:', e);
       }
     }
   }, []);
+
+  const handleSocialChange = (key: keyof Socials, value: string) => {
+    setSocials(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +75,27 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
       const [firstName, ...lastNameParts] = fullName.trim().split(' ');
       const lastName = lastNameParts.join(' ') || '';
 
+      const cleanedSocials: Socials = {};
+      Object.entries(socials).forEach(([key, value]) => {
+        if (value?.trim()) {
+          cleanedSocials[key as keyof Socials] = value.trim();
+        }
+      });
+
       const response = await fetch('https://readtalk.soeparnocorp.workers.dev/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'X-Session-Id': sessionId || ''
         },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, avatar, username })
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          avatar,
+          username,
+          bio,
+          socials: cleanedSocials
+        })
       });
 
       const data = await response.json();
@@ -141,6 +184,46 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
               size="base"
             />
           </Label>
+        </div>
+
+        <div>
+          <Label title="About">
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={140}
+              rows={3}
+              placeholder="Tell people about yourself (max 140)"
+              className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-base resize-none focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </Label>
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 text-right">
+            {bio.length}/140
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium mb-2 text-neutral-900 dark:text-white">
+            Social Links
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+            Enter username only, without https:// or domain
+          </p>
+          <div className="space-y-3">
+            {socialFields.map(({ key, label }) => (
+              <div key={key}>
+                <Label title={label}>
+                  <Input
+                    type="text"
+                    value={socials[key] || ''}
+                    onValueChange={(value) => handleSocialChange(key, value)}
+                    placeholder={`Your ${label} username`}
+                    size="base"
+                  />
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
 
         {error && (
