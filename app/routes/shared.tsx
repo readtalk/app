@@ -161,7 +161,7 @@ export default function Shared() {
                             to="/"
                             className="flex w-full h-12 items-center justify-center rounded-full bg-[#FF0000] text-base font-semibold text-white shadow-md transition active:scale-[0.98] hover:bg-[#CC0000]"
                         >
-                            Install
+                            JOIN NOW
                         </Link>
 
                         <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center pt-2">
