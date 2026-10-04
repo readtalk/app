@@ -87,12 +87,10 @@ export default function Shared() {
         : [];
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-white dark:bg-zinc-950">
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex-1">
-                    <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                        READTalk Messenger
-                    </h1>
+                <div className="flex-1 text-2xl">
+                    <span className="text-[#FF0000]"><strong>READT</strong>alk</span>
                 </div>
             </div>
 
@@ -140,7 +138,7 @@ export default function Shared() {
                                         href={social.url(value as string)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="fade-up w-full flex items-center gap-4 px-4 py-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                                        className="fade-up w-full flex items-center gap-4 px-4 py-3 rounded-lg bg-white dark:bg-zinc-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-zinc-800 hover:scale-[1.01] active:scale-[0.99] transition-all"
                                         style={{ animationDelay: `${0.15 + index * 0.05}s` }}
                                     >
                                         <Icon size={28} weight="fill" className="text-neutral-900 dark:text-white flex-shrink-0" />
@@ -161,14 +159,12 @@ export default function Shared() {
                     <div className="w-full mt-8 flex flex-col items-center gap-3 fade-up fade-delay-3">
                         <Link
                             to="/"
-                            className="flex items-center gap-2 px-6 py-2 text-sm rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex w-full h-12 items-center justify-center rounded-full bg-[#FF0000] text-base font-semibold text-white shadow-md transition active:scale-[0.98] hover:bg-[#CC0000]"
                         >
-                            <span className="text-neutral-500 dark:text-neutral-400">-----&gt;</span>
-                            <span className="font-medium text-neutral-900 dark:text-white">Install</span>
-                            <span className="text-neutral-500 dark:text-neutral-400">&lt;-----</span>
+                            -----&gt; Install &lt;-----
                         </Link>
 
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center pt-2">
                             © {currentYear} SOEPARNO ENTERPRISE Corp.
                         </p>
                     </div>
