@@ -25,6 +25,6 @@
       }
     ],
     "vars": {
-      "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
+      "VALUE_FROM_CLOUDFLARE": "BLOB_READ_WRITE_TOKEN"
     }
 }
