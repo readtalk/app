@@ -68,6 +68,7 @@ const socialsMap: Record<string, { label: string; icon: any; url: (u: string) =>
 
 export default function Shared() {
     const { user } = useLoaderData<typeof loader>();
+    const currentYear = new Date().getFullYear();
 
     const fullName = `${user.first_name} ${user.last_name}`;
     const initials = `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
@@ -153,6 +154,23 @@ export default function Shared() {
                             })}
                         </div>
                     )}
+
+                    <div className="w-full mt-8 flex flex-col items-center gap-3">
+                        <button
+                            onClick={() => {
+                                // TODO: install PWA prompt
+                            }}
+                            className="flex items-center gap-2 px-6 py-2 text-sm rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            <span className="text-neutral-500 dark:text-neutral-400">-----&gt;</span>
+                            <span className="font-medium text-neutral-900 dark:text-white">Install</span>
+                            <span className="text-neutral-500 dark:text-neutral-400">&lt;-----</span>
+                        </button>
+
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
+                            © {currentYear} SOEPARNO ENTERPRISE Corp.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
