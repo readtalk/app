@@ -6,20 +6,21 @@ interface RegisterCredentials {
   password: string;
   firstName: string;
   lastName: string;
+  username: string;
   avatar?: string | null;
 }
 
 interface AuthResponse {
   success: boolean;
   message?: string;
-  user: { id: string; email: string; first_name: string; last_name: string; avatar: string | null; };
+  user: { id: string; email: string; first_name: string; last_name: string; username: string; avatar: string | null; };
   session: { id: string; expires_at: number; };
 }
 
 export default function Register() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState<RegisterCredentials>({
-    email: "", password: "", firstName: "", lastName: "", avatar: null
+    email: "", password: "", firstName: "", lastName: "", username: "", avatar: null
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +59,6 @@ export default function Register() {
 
   return (  
     <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
-      {/* 2. HAPUS rounded-lg shadow-md. CUKUP w-full max-w-md */}
       <div className="w-full max-w-md bg-white dark:bg-zinc-950">
         <div>
           <h3 className="text-center text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -81,6 +81,10 @@ export default function Register() {
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300"> Last Name </label>
               <input id="lastName" name="lastName" type="text" value={credentials.lastName} onChange={handleChange} required className="relative block w-full rounded-md border-0 p-1.5 text-gray-900 dark:text-white bg-transparent ring-1 ring-inset ring-gray-300 dark:ring-neutral-700 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-[#FF0000] sm:text-sm sm:leading-6" placeholder="Enter your last name" />
+            </div>
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300"> Username </label>
+              <input id="username" name="username" type="text" value={credentials.username} onChange={handleChange} required maxLength={14} pattern="[A-Za-z0-9_]+" title="1-14 characters, only A-Z, 0-9, and underscore" className="relative block w-full rounded-md border-0 p-1.5 text-gray-900 dark:text-white bg-transparent ring-1 ring-inset ring-gray-300 dark:ring-neutral-700 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-[#FF0000] sm:text-sm sm:leading-6" placeholder="Enter username (max 14)" />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300"> Password </label>
