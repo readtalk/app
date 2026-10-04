@@ -24,7 +24,6 @@ export default function Register() {
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const currentYear = new Date().getFullYear();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +57,8 @@ export default function Register() {
     setCredentials(prev => ({...prev, [name]: value }));
   };
 
-  return (
-    <div className="slide-in-right relative flex h-screen items-center justify-center bg-white dark:bg-zinc-950 px-4">
+  return (  
+    <div className="slide-in-right flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
       <div className="w-full max-w-md">
         <h3 className="text-center text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Register
@@ -112,12 +111,6 @@ export default function Register() {
           </p>
         </div>
       </div>
-
-      <footer className="absolute bottom-6 left-0 right-0 text-center">
-        <p className="text-xs text-neutral-400 dark:text-neutral-500">
-          © {currentYear} SOEPARNO ENTERPRISE Corp.
-        </p>
-      </footer>
 
       <style>{`
         @keyframes slideInRight {
