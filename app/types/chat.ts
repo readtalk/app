@@ -8,6 +8,16 @@ export type Channel = {
     member_ids: string[]
 }
 
+export type Socials = {
+    bluesky?: string
+    facebook?: string
+    instagram?: string
+    tiktok?: string
+    x?: string
+    youtube?: string
+    linkedin?: string
+}
+
 export type User = {
     id: string
     email: string
@@ -16,6 +26,8 @@ export type User = {
     username: string | null
     username_updated_at?: number | null
     avatar: string | null
+    bio?: string | null
+    socials?: Socials | null
     status?: 'online' | 'offline'
 }
 
