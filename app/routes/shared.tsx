@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom";
+import { useLoaderData, Link } from "react-router-dom";
 import { FacebookLogo, InstagramLogo, TiktokLogo, XLogo, YoutubeLogo, LinkedinLogo } from "@phosphor-icons/react";
 import type { Route } from "./+types/shared";
 
@@ -91,29 +91,31 @@ export default function Shared() {
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex-1">
                     <h1 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                        Profile
+                        READTalk Messenger
                     </h1>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
                 <div className="mx-auto max-w-lg flex flex-col items-center gap-4 py-8">
-                    {user.avatar ? (
-                        <img
-                            src={user.avatar}
-                            alt={fullName}
-                            className="size-32 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800"
-                        />
-                    ) : (
-                        <div
-                            className="size-32 rounded-full flex items-center justify-center text-white text-4xl font-bold"
-                            style={{ backgroundColor: getColorFromName(fullName) }}
-                        >
-                            {initials}
-                        </div>
-                    )}
+                    <div className="fade-up">
+                        {user.avatar ? (
+                            <img
+                                src={user.avatar}
+                                alt={fullName}
+                                className="size-32 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800"
+                            />
+                        ) : (
+                            <div
+                                className="size-32 rounded-full flex items-center justify-center text-white text-4xl font-bold"
+                                style={{ backgroundColor: getColorFromName(fullName) }}
+                            >
+                                {initials}
+                            </div>
+                        )}
+                    </div>
 
-                    <div className="text-center">
+                    <div className="text-center fade-up fade-delay-1">
                         <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
                             {fullName}
                         </h2>
@@ -129,7 +131,7 @@ export default function Shared() {
 
                     {activeSocials.length > 0 && (
                         <div className="w-full mt-6 space-y-2">
-                            {activeSocials.map(([key, value]) => {
+                            {activeSocials.map(([key, value], index) => {
                                 const social = socialsMap[key];
                                 const Icon = social.icon;
                                 return (
@@ -138,7 +140,8 @@ export default function Shared() {
                                         href={social.url(value as string)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-full flex items-center gap-4 px-4 py-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                                        className="fade-up w-full flex items-center gap-4 px-4 py-3 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                                        style={{ animationDelay: `${0.15 + index * 0.05}s` }}
                                     >
                                         <Icon size={28} weight="fill" className="text-neutral-900 dark:text-white flex-shrink-0" />
                                         <div className="flex-1 min-w-0">
@@ -155,17 +158,15 @@ export default function Shared() {
                         </div>
                     )}
 
-                    <div className="w-full mt-8 flex flex-col items-center gap-3">
-                        <button
-                            onClick={() => {
-                                // TODO: install PWA prompt
-                            }}
-                            className="flex items-center gap-2 px-6 py-2 text-sm rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    <div className="w-full mt-8 flex flex-col items-center gap-3 fade-up fade-delay-3">
+                        <Link
+                            to="/"
+                            className="flex items-center gap-2 px-6 py-2 text-sm rounded-full border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                             <span className="text-neutral-500 dark:text-neutral-400">-----&gt;</span>
                             <span className="font-medium text-neutral-900 dark:text-white">Install</span>
                             <span className="text-neutral-500 dark:text-neutral-400">&lt;-----</span>
-                        </button>
+                        </Link>
 
                         <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
                             © {currentYear} SOEPARNO ENTERPRISE Corp.
@@ -173,6 +174,24 @@ export default function Shared() {
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes fadeUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(12px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .fade-up {
+                    animation: fadeUp 0.5s ease-out both;
+                }
+                .fade-delay-1 { animation-delay: 0.1s; }
+                .fade-delay-3 { animation-delay: 0.3s; }
+            `}</style>
         </div>
     );
 }
