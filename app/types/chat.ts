@@ -13,6 +13,8 @@ export type User = {
     email: string
     first_name: string
     last_name: string
+    username: string | null
+    username_updated_at?: number | null
     avatar: string | null
     status?: 'online' | 'offline'
 }
@@ -31,4 +33,4 @@ export interface Message {
     content: string;
     created_at: number;
     assets?: MessageAsset[];
-} 
+}
