@@ -11,8 +11,10 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
   const { users } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [avatar, setAvatar] = useState('');
+  const [usernameUpdatedAt, setUsernameUpdatedAt] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -23,8 +25,10 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
       try {
         const user = JSON.parse(userStr);
         setFullName(`${user.first_name || ''} ${user.last_name || ''}`.trim());
+        setUsername(user.username || '');
         setEmail(user.email || '');
         setAvatar(user.avatar || '');
+        setUsernameUpdatedAt(user.username_updated_at ?? null);
       } catch (e) {
         console.error('Failed to parse user:', e);
       }
@@ -48,13 +52,13 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
           'Content-Type': 'application/json',
           'X-Session-Id': sessionId || ''
         },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, avatar })
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, avatar, username })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update profile');
+        throw new Error(data.error || data.message || 'Failed to update profile');
       }
 
       if (data.user) {
@@ -69,6 +73,10 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
       setIsSaving(false);
     }
   };
+
+  const isUsernameLocked = usernameUpdatedAt
+    ? (Math.floor(Date.now() / 1000) - usernameUpdatedAt) < (100 * 24 * 60 * 60)
+    : false;
 
   return (
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
@@ -85,6 +93,25 @@ export const ProfileModal = ({ onClose }: ProfileModalProps) => {
               size="base"
             />
           </Label>
+        </div>
+
+        <div>
+          <Label title="Username" required>
+            <Input
+              type="text"
+              value={username}
+              onValueChange={(value) => setUsername(value)}
+              placeholder="Enter username (max 14)"
+              size="base"
+              disabled={isUsernameLocked}
+              className={isUsernameLocked ? 'cursor-not-allowed opacity-60' : ''}
+            />
+          </Label>
+          {isUsernameLocked && (
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              Username can only be changed once every 100 days
+            </p>
+          )}
         </div>
 
         <div>
