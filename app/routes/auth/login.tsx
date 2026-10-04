@@ -48,7 +48,7 @@ export default function Login() {
   };
 
   return (
-    <div className="slide-in-right flex min-h-screen flex-col bg-white dark:bg-zinc-950">
+    <div className="slide-in-right flex h-screen flex-col overflow-hidden bg-white dark:bg-zinc-950">
       <div className="flex flex-1 items-center justify-center px-4 py-8">
         <div className="w-full max-w-[400px] bg-white dark:bg-zinc-950">
           <div>
