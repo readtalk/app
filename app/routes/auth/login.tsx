@@ -32,7 +32,7 @@ export default function Login() {
       localStorage.setItem("session", data.session.id);
       localStorage.setItem("userId", data.user.id);
       localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "/overview";
+      window.location.href = "/channel/0";
     } catch (error) {
       setError("Failed to sign in");
       console.error("Authentication error:", error);
