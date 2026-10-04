@@ -330,14 +330,22 @@ export default function Channel() {
                         .filter(user => currentChannel.member_ids.includes(user.id))
                         .map(user => (
                             <div key={user.id} className="relative" title={`${user.first_name} ${user.last_name}`}>
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-blue-500 text-white"
-                                    style={{
-                                        backgroundColor: getColorFromName(`${user.first_name} ${user.last_name}`),
-                                        color: getContrastColor(getColorFromName(`${user.first_name} ${user.last_name}`))
-                                    }}
-                                >
-                                    {getUserInitials(user.id)}
-                                </div>
+                                {user.avatar ? (
+                                    <img
+                                        src={user.avatar}
+                                        alt={`${user.first_name} ${user.last_name}`}
+                                        className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-blue-500 text-white"
+                                        style={{
+                                            backgroundColor: getColorFromName(`${user.first_name} ${user.last_name}`),
+                                            color: getContrastColor(getColorFromName(`${user.first_name} ${user.last_name}`))
+                                        }}
+                                    >
+                                        {getUserInitials(user.id)}
+                                    </div>
+                                )}
                                 <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white
                                     ${onlineUsers.some(u => u.id === user.id) ? 'bg-green-500' : 'bg-gray-400'}`}
                                 />
@@ -432,14 +440,22 @@ export default function Channel() {
                                             </div>
                                         ) : (
                                             <div className="flex items-start gap-2">
-                                                <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
-                                                    style={{
-                                                        backgroundColor: getColorFromName(displayName),
-                                                        color: getContrastColor(getColorFromName(displayName))
-                                                    }}
-                                                >
-                                                    {getUserInitials(msg.user_id)}
-                                                </div>
+                                                {user?.avatar ? (
+                                                    <img
+                                                        src={user.avatar}
+                                                        alt={displayName}
+                                                        className="w-9 h-9 rounded object-cover flex-shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="w-9 h-9 rounded flex-shrink-0 flex items-center justify-center font-medium"
+                                                        style={{
+                                                            backgroundColor: getColorFromName(displayName),
+                                                            color: getContrastColor(getColorFromName(displayName))
+                                                        }}
+                                                    >
+                                                        {getUserInitials(msg.user_id)}
+                                                    </div>
+                                                )}
                                                 <div className="min-w-0 flex flex-col items-start max-w-[75%]">
                                                     <div className="bg-neutral-100 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm">
                                                         <div className="flex items-baseline gap-2 mb-0.5">
