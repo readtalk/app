@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
-import { Lock } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type CreateChannelModalProps = {
@@ -12,13 +11,9 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
   const currentUserId = localStorage.getItem('userId') || '';
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUserId]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const otherSelectedCount = selectedUsers.filter(id => id !== currentUserId).length;
-  const isSelectionLimited = isPrivate && otherSelectedCount >= 1;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +30,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
         body: JSON.stringify({
           name: channelName,
           description,
-          is_private: isPrivate,
+          is_private: false,
           member_ids: selectedUsers
         })
       });
@@ -87,26 +82,6 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="private"
-            checked={isPrivate}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              setIsPrivate(checked);
-              if (checked && otherSelectedCount > 1) {
-                setSelectedUsers([currentUserId]);
-              }
-            }}
-            className="rounded border-neutral-300 dark:border-neutral-700"
-          />
-          <label htmlFor="private" className="flex items-center gap-2 text-sm">
-            <Lock size={16} />
-            Private channel
-          </label>
-        </div>
-
         <div>
           <label className="block text-sm font-medium mb-1">
             Add members
@@ -115,7 +90,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
             {users.map((user) => {
               const isCurrentUser = user.id === currentUserId;
               const isChecked = selectedUsers.includes(user.id);
-              const isDisabled = isCurrentUser || (isPrivate && isSelectionLimited && !isChecked);
+              const isDisabled = isCurrentUser;
 
               return (
                 <label
