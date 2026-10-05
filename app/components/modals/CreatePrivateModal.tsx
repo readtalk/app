@@ -45,7 +45,7 @@ export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
           'X-Session-Id': localStorage.getItem('session') || ''
         },
         body: JSON.stringify({
-          name: 'dm',
+          name: 'Message',
           description: null,
           is_private: true,
           member_ids: [currentUserId, selectedUser]
