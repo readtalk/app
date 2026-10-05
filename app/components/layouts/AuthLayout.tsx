@@ -7,6 +7,7 @@ import { useModal } from '~/providers/ModalProvider';
 import { CreateChannelModal } from '~/components/modals/CreateChannelModal';
 import { CreatePrivateModal } from '~/components/modals/CreatePrivateModal';
 import { ProfileModal } from '~/components/modals/ProfileModal';
+import { UserOverviewModal } from '~/components/modals/UserOverviewModal';
 
 export default function AuthLayout() {
     const location = useLocation();
@@ -171,7 +172,6 @@ export default function AuthLayout() {
             try {
                 await navigator.share({ url });
             } catch {
-                // user cancelled
             }
         } else {
             await navigator.clipboard.writeText(url);
@@ -453,22 +453,24 @@ export default function AuthLayout() {
                                 />
                             </div>
                             {onlineUsers.map((user) => (
-                                <div 
+                                <button
                                     key={user.id}
-                                    className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
+                                    onClick={() => openModal(<UserOverviewModal onClose={closeModal} userId={user.id} />)}
+                                    className="w-full flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
                                 >
                                     <span className="mr-2 size-2 rounded-full bg-green-500"></span>
                                     {user.first_name} {user.last_name}
-                                </div>
+                                </button>
                             ))}
                             {offlineUsers.map((user) => (
-                                <div 
+                                <button
                                     key={user.id}
-                                    className="flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer opacity-60"
+                                    onClick={() => openModal(<UserOverviewModal onClose={closeModal} userId={user.id} />)}
+                                    className="w-full flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer opacity-60"
                                 >
                                     <span className="mr-2 size-2 rounded-full bg-neutral-400"></span>
                                     {user.first_name} {user.last_name}
-                                </div>
+                                </button>
                             ))}
                         </>
                     )}
