@@ -46,7 +46,7 @@ export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
         },
         body: JSON.stringify({
           name: 'Message',
-          description: null,
+          description: 'Encryption',
           is_private: true,
           member_ids: [currentUserId, selectedUser]
         })
