@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useChatContext } from '~/providers/ChatProvider';
 import type { User } from '~/types/chat';
 
@@ -7,7 +8,8 @@ type CreatePrivateModalProps = {
 }
 
 export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
-  const { users, addChannel } = useChatContext();
+  const { users, channels, addChannel } = useChatContext();
+  const navigate = useNavigate();
   const currentUserId = localStorage.getItem('userId') || '';
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +21,20 @@ export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
     e.preventDefault();
     if (!selectedUser) return;
     setError(null);
+
+    const existingDM = channels.find(c =>
+      c.is_private &&
+      c.member_ids.length === 2 &&
+      c.member_ids.includes(currentUserId) &&
+      c.member_ids.includes(selectedUser)
+    );
+
+    if (existingDM) {
+      onClose();
+      navigate(`/channel/${existingDM.id}`);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -44,6 +60,7 @@ export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
 
       addChannel(data.channel);
       onClose();
+      navigate(`/channel/${data.channel.id}`);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to create DM');
     } finally {
