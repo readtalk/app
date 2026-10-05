@@ -5,6 +5,7 @@ import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
 import { CreateChannelModal } from '~/components/modals/CreateChannelModal';
+import { CreatePrivateModal } from '~/components/modals/CreatePrivateModal';
 import { ProfileModal } from '~/components/modals/ProfileModal';
 
 export default function AuthLayout() {
@@ -285,7 +286,7 @@ export default function AuthLayout() {
                             {activeTab === 'chat' && (
                                 <button
                                     onClick={() => {
-                                        openModal(<CreateChannelModal onClose={closeModal} />);
+                                        openModal(<CreatePrivateModal onClose={closeModal} />);
                                     }}
                                     className="hidden md:flex p-1 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-all"
                                 >
@@ -407,7 +408,7 @@ export default function AuthLayout() {
 
                             <button
                                 onClick={() => {
-                                    openModal(<CreateChannelModal onClose={closeModal} />);
+                                    openModal(<CreatePrivateModal onClose={closeModal} />);
                                 }}
                                 className="md:hidden fixed bottom-24 right-6 size-14 rounded-full bg-red-500 text-white shadow-lg flex items-center justify-center hover:bg-red-600 z-40"
                             >
