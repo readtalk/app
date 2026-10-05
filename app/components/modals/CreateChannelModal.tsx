@@ -15,6 +15,8 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const otherUsers = users.filter(user => user.id !== currentUserId);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -87,33 +89,35 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
             Add members
           </label>
           <div className="max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md">
-            {users.map((user) => {
-              const isCurrentUser = user.id === currentUserId;
-              const isChecked = selectedUsers.includes(user.id);
-              const isDisabled = isCurrentUser;
-
-              return (
-                <label
-                  key={user.id}
-                  className={`flex items-center px-3 py-2 ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer'}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    disabled={isDisabled}
-                    onChange={(e) => {
-                      setSelectedUsers(prev =>
-                        e.target.checked
-                          ? [...prev, user.id]
-                          : prev.filter(id => id !== user.id)
-                      );
-                    }}
-                    className="rounded border-neutral-300 dark:border-neutral-700 mr-2"
-                  />
-                  {user.first_name} {user.last_name}
-                </label>
-              );
-            })}
+            {otherUsers.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-neutral-500">
+                No users available
+              </div>
+            ) : (
+              otherUsers.map((user) => {
+                const isChecked = selectedUsers.includes(user.id);
+                return (
+                  <label
+                    key={user.id}
+                    className="flex items-center px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        setSelectedUsers(prev =>
+                          e.target.checked
+                            ? [...prev, user.id]
+                            : prev.filter(id => id !== user.id)
+                        );
+                      }}
+                      className="rounded border-neutral-300 dark:border-neutral-700 mr-2"
+                    />
+                    {user.first_name} {user.last_name}
+                  </label>
+                );
+              })
+            )}
           </div>
         </div>
 
