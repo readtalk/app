@@ -59,6 +59,25 @@ export default function AuthLayout() {
         return name.slice(0, 2).toUpperCase();
     };
 
+    const getDMInfo = (channel: any) => {
+        const otherUserId = channel.member_ids.find((id: string) => id !== currentUser?.id);
+        const otherUser = users.find(u => u.id === otherUserId);
+        if (otherUser) {
+            return {
+                name: `${otherUser.first_name} ${otherUser.last_name}`,
+                avatar: otherUser.avatar,
+                initials: `${otherUser.first_name[0]}${otherUser.last_name[0]}`.toUpperCase(),
+                color: getChannelColor(`${otherUser.first_name} ${otherUser.last_name}`),
+            };
+        }
+        return {
+            name: 'Unknown',
+            avatar: null,
+            initials: '?',
+            color: '#888',
+        };
+    };
+
     const renderUserAvatar = (size: string) => {
         if (currentUser?.avatar) {
             return (
@@ -380,25 +399,30 @@ export default function AuthLayout() {
                                 </div>
                             ) : (
                                 privateChannels.map((channel) => {
-                                    const color = getChannelColor(channel.name);
+                                    const dm = getDMInfo(channel);
                                     return (
                                         <Link
                                             key={channel.id}
                                             to={`/channel/${channel.id}`}
                                             className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-900 cursor-pointer"
                                         >
-                                            <div
-                                                className="size-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium"
-                                                style={{ backgroundColor: color }}
-                                            >
-                                                {getChannelInitials(channel.name)}
-                                            </div>
+                                            {dm.avatar ? (
+                                                <img
+                                                    src={dm.avatar}
+                                                    alt={dm.name}
+                                                    className="size-12 rounded-full flex-shrink-0 object-cover"
+                                                />
+                                            ) : (
+                                                <div
+                                                    className="size-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium"
+                                                    style={{ backgroundColor: dm.color }}
+                                                >
+                                                    {dm.initials}
+                                                </div>
+                                            )}
                                             <div className="flex-1 min-w-0">
                                                 <div className={`truncate ${unreadChannels.has(channel.id) ? 'font-bold' : 'font-medium'} text-neutral-900 dark:text-neutral-100`}>
-                                                    {channel.name}
-                                                </div>
-                                                <div className="text-sm text-neutral-500 dark:text-neutral-400 truncate">
-                                                    {channel.description || 'Private chat'}
+                                                    {dm.name}
                                                 </div>
                                             </div>
                                         </Link>
