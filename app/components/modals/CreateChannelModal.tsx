@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
-import type { User } from '~/types/chat';
 
 type CreateChannelModalProps = {
   onClose: () => void;
@@ -11,15 +10,24 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
   const currentUserId = localStorage.getItem('userId') || '';
   const [channelName, setChannelName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUserId]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [invitePolicy, setInvitePolicy] = useState<'admin' | 'all'>('admin');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const otherUsers = users.filter(user => user.id !== currentUserId);
+  const totalMembers = selectedUsers.length + 1;
+  const canSubmit = channelName.trim().length > 0 && totalMembers >= 2;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (totalMembers < 2) {
+      setError('Group requires at least 2 members');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -33,14 +41,15 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
           name: channelName,
           description,
           is_private: false,
-          member_ids: selectedUsers
+          member_ids: [currentUserId, ...selectedUsers],
+          invite_policy: invitePolicy
         })
       });
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to create channel');
+        throw new Error(data.error || data.message || 'Failed to create channel');
       }
 
       addChannel(data.channel);
@@ -55,7 +64,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
   return (
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
       <h2 className="text-xl font-semibold mb-4">Create a new channel</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -86,7 +95,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            Add members
+            Add members ({totalMembers} total)
           </label>
           <div className="max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md">
             {otherUsers.length === 0 ? (
@@ -119,6 +128,33 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
               })
             )}
           </div>
+          {totalMembers < 2 && (
+            <p className="mt-1 text-xs text-red-500">
+              Select at least 1 other member
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Invite policy
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setInvitePolicy('admin')}
+              className={`flex-1 px-3 py-2 text-sm rounded-md border ${invitePolicy === 'admin' ? 'bg-red-500 text-white border-red-500' : 'border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+            >
+              Admin only
+            </button>
+            <button
+              type="button"
+              onClick={() => setInvitePolicy('all')}
+              className={`flex-1 px-3 py-2 text-sm rounded-md border ${invitePolicy === 'all' ? 'bg-red-500 text-white border-red-500' : 'border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+            >
+              All members
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -135,7 +171,7 @@ export const CreateChannelModal = ({ onClose }: CreateChannelModalProps) => {
           </button>
           <button
             type="submit"
-            disabled={isLoading || !channelName.trim()}
+            disabled={isLoading || !canSubmit}
             className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Creating...' : 'Create Channel'}
