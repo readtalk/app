@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { Message, Channel } from '~/types/chat';
+import type { Message } from '~/types/chat';
 
 type WebSocketContextType = {
     addMessageListener: (channelId: string, callback: (message: Message) => void) => void;
@@ -8,8 +8,6 @@ type WebSocketContextType = {
     updateUserStatus: (userId: string, status: 'online' | 'offline') => void;
     isConnected: () => boolean;
     reconnect: () => void;
-    addChannelListener: (callback: (event: { type: string; channel?: Channel; channelId?: string }) => void) => void;
-    removeChannelListener: (callback: (event: { type: string; channel?: Channel; channelId?: string }) => void) => void;
 };
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
@@ -17,7 +15,6 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [messageListeners] = useState<Record<string, ((message: any) => void)[]>>({});
     const [globalMessageListeners] = useState<((message: any) => void)[]>([]);
-    const [channelListeners] = useState<((event: { type: string; channel?: Channel; channelId?: string }) => void)[]>([]);
     const [ws, setWs] = useState<WebSocket | null>(null);
 
     const isConnected = (): boolean => {
@@ -25,11 +22,13 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
     };
 
     const connect = () => {
+        // Don't create a new connection if we already have an active one
         if (isConnected()) {
             console.log('WebSocket already connected, skipping reconnection');
             return;
         }
 
+        // Close existing connection if it's in a closing/closed state
         if (ws) {
             ws.close();
         }
@@ -37,10 +36,11 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
         const userId = localStorage.getItem('userId') || '';
         const sessionId = localStorage.getItem('session') || '';
         const newWs = new WebSocket(`wss://readtalk.soeparnocorp.workers.dev/ws?sessionId=${encodeURIComponent(sessionId)}`);
-
+        
         newWs.onopen = () => {
+            // Notify about user's own connection
             if (messageListeners['USER_STATUS']) {
-                messageListeners['USER_STATUS'].forEach(callback =>
+                messageListeners['USER_STATUS'].forEach(callback => 
                     callback({ type: 'USER_CONNECTED', userId })
                 );
             }
@@ -48,25 +48,21 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
         newWs.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('WebSocket message received:', data);
-
+            console.log('WebSocket message received:', data); // Debug log
+            
             if (data.type === 'NEW_MESSAGE' && data.message) {
+                // Notify channel-specific listeners
                 notifyNewMessage(data.message.channel_id, data.message);
+                
+                // Notify global listeners
                 globalMessageListeners.forEach(callback => callback(data));
             }
 
+            // Handle user status changes
             if (data.type === 'USER_CONNECTED' || data.type === 'USER_DISCONNECTED') {
                 if (messageListeners['USER_STATUS']) {
                     messageListeners['USER_STATUS'].forEach(callback => callback(data));
                 }
-            }
-
-            if (data.type === 'NEW_CHANNEL' || data.type === 'CHANNEL_UPDATED' || data.type === 'CHANNEL_LEFT') {
-                channelListeners.forEach(callback => callback({
-                    type: data.type,
-                    channel: data.channel,
-                    channelId: data.channelId
-                }));
             }
         };
 
@@ -103,6 +99,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
         };
     }, [ws]);
 
+    // Add a function to manually reconnect
     const reconnect = () => {
         console.log('Manually reconnecting WebSocket...');
         connect();
@@ -142,27 +139,14 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
         }
     };
 
-    const addChannelListener = (callback: (event: { type: string; channel?: Channel; channelId?: string }) => void) => {
-        channelListeners.push(callback);
-    };
-
-    const removeChannelListener = (callback: (event: { type: string; channel?: Channel; channelId?: string }) => void) => {
-        const index = channelListeners.indexOf(callback);
-        if (index > -1) {
-            channelListeners.splice(index, 1);
-        }
-    };
-
     return (
-        <WebSocketContext.Provider value={{
-            addMessageListener,
-            removeMessageListener,
+        <WebSocketContext.Provider value={{ 
+            addMessageListener, 
+            removeMessageListener, 
             notifyNewMessage,
             updateUserStatus,
             isConnected,
-            reconnect,
-            addChannelListener,
-            removeChannelListener
+            reconnect
         }}>
             {children}
         </WebSocketContext.Provider>
@@ -175,4 +159,4 @@ export const useWebSocket = () => {
         throw new Error('useWebSocket must be used within a WebSocketProvider');
     }
     return context;
-};
+}; 
