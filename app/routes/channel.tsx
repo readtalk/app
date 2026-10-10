@@ -1,3 +1,4 @@
+//
 import { useParams, useNavigate } from 'react-router-dom';
 import { Hash, Lock, ArrowDown, DotsThree, ArrowLeft } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
