@@ -9,15 +9,11 @@ type InviteUsersModalProps = {
 
 export const InviteUsersModal = ({ onClose, channel }: InviteUsersModalProps) => {
   const { users } = useChatContext();
-  const currentUserId = localStorage.getItem('userId') || '';
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const invitableUsers = users.filter(user => !channel.member_ids?.includes(user.id));
-
-  const isAdmin = channel.admin_ids?.includes(currentUserId) ?? false;
-  const canInvite = !channel.is_private && (channel.invite_policy === 'all' || isAdmin);
 
   if (channel.is_private) {
     return (
@@ -25,26 +21,6 @@ export const InviteUsersModal = ({ onClose, channel }: InviteUsersModalProps) =>
         <h2 className="text-xl font-semibold mb-4">Invite users to {channel.name}</h2>
         <p className="text-sm text-neutral-500 mb-4">
           Private channels cannot invite more users.
-        </p>
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!canInvite) {
-    return (
-      <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
-        <h2 className="text-xl font-semibold mb-4">Invite users to {channel.name}</h2>
-        <p className="text-sm text-neutral-500 mb-4">
-          Only admins can invite users to this channel.
         </p>
         <div className="flex justify-end">
           <button
@@ -80,8 +56,8 @@ export const InviteUsersModal = ({ onClose, channel }: InviteUsersModalProps) =>
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || data.message || 'Failed to invite users');
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to invite users');
       }
 
       onClose();
@@ -95,7 +71,7 @@ export const InviteUsersModal = ({ onClose, channel }: InviteUsersModalProps) =>
   return (
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
       <h2 className="text-xl font-semibold mb-4">Invite users to {channel.name}</h2>
-
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -146,7 +122,7 @@ export const InviteUsersModal = ({ onClose, channel }: InviteUsersModalProps) =>
           <button
             type="submit"
             disabled={isLoading || selectedUsers.length === 0}
-            className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Inviting...' : 'Invite Users'}
           </button>
