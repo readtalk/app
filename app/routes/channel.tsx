@@ -8,7 +8,6 @@ import { useModal } from '~/providers/ModalProvider';
 import { InviteUsersModal } from '~/components/modals/InviteUsersModal';
 import { AdminChannelModal } from '~/components/modals/AdminChannelModal';
 import { ChatInput } from '~/components/ChatInput';
-import { AdminChannelModal } from '~/components/modals/AdminChannelModal';
 
 export default function Channel() {
     const { id } = useParams();
