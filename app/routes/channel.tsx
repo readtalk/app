@@ -6,7 +6,6 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { Message, User } from '~/types/chat';
 import { useModal } from '~/providers/ModalProvider';
 import { InviteUsersModal } from '~/components/modals/InviteUsersModal';
-import { AdminChannelModal } from '~/components/modals/AdminChannelModal';
 import { ChatInput } from '~/components/ChatInput';
 
 export default function Channel() {
@@ -86,18 +85,6 @@ export default function Channel() {
     };
 
     const currentChannel = channels.find(channel => channel.id.toString() === id);
-
-    const isAdmin = useMemo(() => {
-        if (!currentChannel || !myUserId) return false;
-        return currentChannel.admin_ids?.includes(myUserId) ?? false;
-    }, [currentChannel, myUserId]);
-
-    const canInvite = useMemo(() => {
-        if (!currentChannel) return false;
-        if (currentChannel.is_private) return false;
-        if (currentChannel.invite_policy === 'all') return true;
-        return isAdmin;
-    }, [currentChannel, isAdmin]);
 
     const scrollToBottom = () => {
         messageContainerRef.current?.scrollTo({
@@ -250,12 +237,6 @@ export default function Channel() {
         setShowDropdown(false);
     };
 
-    const handleManageChannel = () => {
-        if (!currentChannel) return;
-        openModal(<AdminChannelModal onClose={closeModal} channel={currentChannel} />);
-        setShowDropdown(false);
-    };
-
     const handleLeaveChannel = async () => {
         try {
             const response = await fetch(`https://readtalk.soeparnocorp.workers.dev/channels/${currentChannel?.id}/leave`, {
@@ -264,13 +245,9 @@ export default function Channel() {
                     'X-Session-Id': localStorage.getItem('session') || '',
                 }
             });
-
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || 'Failed to leave channel');
+            if (!response.ok) {
+                throw new Error('Failed to leave channel');
             }
-
             navigate('/channel/0');
             setShowDropdown(false);
         } catch (error) {
@@ -385,15 +362,7 @@ export default function Channel() {
                     </button>
                     {showDropdown && (
                         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg z-10 py-1">
-                            {isAdmin && !currentChannel.is_private && (
-                                <button
-                                    onClick={handleManageChannel}
-                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                >
-                                    Manage
-                                </button>
-                            )}
-                            {canInvite && (
+                            {!currentChannel.is_private && (
                                 <button
                                     onClick={handleInviteUsers}
                                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
@@ -401,14 +370,12 @@ export default function Channel() {
                                     Invite
                                 </button>
                             )}
-                            {!isAdmin && (
-                                <button
-                                    onClick={handleLeaveChannel}
-                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                >
-                                    Leave
-                                </button>
-                            )}
+                            <button
+                                onClick={handleLeaveChannel}
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                            >
+                                Leave
+                            </button>
                         </div>
                     )}
                 </div>
