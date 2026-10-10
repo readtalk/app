@@ -97,8 +97,8 @@ export const UserOverviewModal = ({ onClose, userId }: UserOverviewModalProps) =
           'X-Session-Id': localStorage.getItem('session') || ''
         },
         body: JSON.stringify({
-          name: 'dm',
-          description: null,
+          name: 'Chat',
+          description: 'Private Mode',
           is_private: true,
           member_ids: [currentUserId, user.id]
         })
