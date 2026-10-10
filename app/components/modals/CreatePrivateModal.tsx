@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChatContext } from '~/providers/ChatProvider';
+import type { User } from '~/types/chat';
 
 type CreatePrivateModalProps = {
   onClose: () => void;
@@ -54,7 +55,7 @@ export const CreatePrivateModal = ({ onClose }: CreatePrivateModalProps) => {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || data.message || 'Failed to create DM');
+        throw new Error(data.message || 'Failed to create DM');
       }
 
       addChannel(data.channel);
