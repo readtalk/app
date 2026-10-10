@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import { Moon, Sun, Plus, Lock, SignOut, User, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft, UserCircle, Bell, Palette, Globe, Question, ShareNetwork } from "@phosphor-icons/react";
+import { Moon, Sun, Plus, SignOut, ChatCircleDots, Camera, UsersThree, Phone, DotsThree, Gear, ArrowLeft, UserCircle, Bell, Palette, Globe, Question, ShareNetwork } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
 import { useWebSocket } from "~/providers/WebSocketProvider";
 import { useModal } from '~/providers/ModalProvider';
@@ -18,7 +18,7 @@ export default function AuthLayout() {
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
             const savedTheme = localStorage.getItem('theme');
-            return (savedTheme || 
+            return (savedTheme ||
                     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) as 'light' | 'dark';
         }
         return 'light';
@@ -107,7 +107,7 @@ export default function AuthLayout() {
         const handleUserStatus = (message: any) => {
             if (message.type === 'USER_CONNECTED' || message.type === 'USER_DISCONNECTED') {
                 updateUserStatus(
-                    message.userId, 
+                    message.userId,
                     message.type === 'USER_CONNECTED' ? 'online' : 'offline'
                 );
             }
@@ -290,7 +290,7 @@ export default function AuthLayout() {
                 </div>
 
                 <div className={`
-                    ${isChatPage ? 'hidden md:block' : 'block'} 
+                    ${isChatPage ? 'hidden md:block' : 'block'}
                     w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
@@ -447,9 +447,9 @@ export default function AuthLayout() {
                                 <h2 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
                                     Users
                                 </h2>
-                                <Plus 
-                                    size={16} 
-                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer" 
+                                <Plus
+                                    size={16}
+                                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 cursor-pointer"
                                 />
                             </div>
                             {onlineUsers.map((user) => (
