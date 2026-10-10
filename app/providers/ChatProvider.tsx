@@ -9,7 +9,6 @@ type ChatContextType = {
   offlineUsers: User[]
   addChannel: (channel: Channel) => void
   removeChannel: (channelId: string) => void
-  updateChannel: (channel: Channel) => void
   updateUserStatus: (userId: string, status: 'online' | 'offline') => void
   isLoadingChannels: boolean
   messages: Message[]
@@ -21,7 +20,7 @@ type ChatContextType = {
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  const { updateUserStatus: wsUpdateUserStatus, addChannelListener, removeChannelListener } = useWebSocket();
+  const { updateUserStatus: wsUpdateUserStatus } = useWebSocket();
   const [channels, setChannels] = useState<Channel[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [isLoadingChannels, setIsLoadingChannels] = useState(true)
@@ -30,6 +29,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
+  // Fetch channels on mount
   useEffect(() => {
     const fetchChannels = async () => {
       try {
@@ -38,9 +38,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             'X-Session-Id': localStorage.getItem('session') || ''
           }
         })
-
+        
         const data = await response.json()
-
+        
         if (data.success) {
           setChannels(data.channels)
         } else {
@@ -56,37 +56,42 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     fetchChannels()
   }, [])
 
+  // Fetch users on mount
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        // Fetch all users
         const usersResponse = await fetch('https://readtalk.soeparnocorp.workers.dev/users', {
           headers: {
             'X-Session-Id': localStorage.getItem('session') || '',
           }
         });
-
+        
         const usersData = await usersResponse.json();
-
+        
         if (!usersData.success) {
           console.error('Failed to fetch users');
           return;
         }
 
+        // Fetch online users
         const onlineResponse = await fetch('https://readtalk.soeparnocorp.workers.dev/users/online', {
           headers: {
             'X-Session-Id': localStorage.getItem('session') || '',
           }
         });
-
+        
         const onlineData = await onlineResponse.json();
-
+        
         if (!onlineData.success) {
           console.error('Failed to fetch online users');
           return;
         }
 
+        // Create a Set of online user IDs for faster lookup
         const onlineUserIds = new Set(onlineData.onlineUsers.map((user: User) => user.id));
-
+        
+        // Initialize users with their correct online/offline status
         const usersWithStatus = usersData.users.map((user: User) => ({
           ...user,
           status: onlineUserIds.has(user.id) ? 'online' as const : 'offline' as const
@@ -103,51 +108,15 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     fetchUsers();
   }, []);
 
-  useEffect(() => {
-    const handleChannelEvent = (event: { type: string; channel?: Channel; channelId?: string }) => {
-      if (event.type === 'NEW_CHANNEL' && event.channel) {
-        setChannels(prev => {
-          if (prev.some(c => c.id === event.channel!.id)) return prev;
-          return [...prev, event.channel!];
-        });
-      }
-
-      if (event.type === 'CHANNEL_UPDATED' && event.channel) {
-        setChannels(prev =>
-          prev.map(c => c.id === event.channel!.id ? event.channel! : c)
-        );
-      }
-
-      if (event.type === 'CHANNEL_LEFT' && event.channelId) {
-        setChannels(prev => prev.filter(c => c.id !== event.channelId));
-      }
-    };
-
-    addChannelListener(handleChannelEvent);
-
-    return () => {
-      removeChannelListener(handleChannelEvent);
-    };
-  }, [addChannelListener, removeChannelListener]);
-
   const onlineUsers = users.filter(user => user.status === 'online')
   const offlineUsers = users.filter(user => user.status === 'offline')
 
   const addChannel = (channel: Channel) => {
-    setChannels(prev => {
-      if (prev.some(c => c.id === channel.id)) return prev;
-      return [...prev, channel];
-    })
+    setChannels(prev => [...prev, channel])
   }
 
   const removeChannel = (channelId: string) => {
     setChannels(prev => prev.filter(channel => channel.id !== channelId))
-  }
-
-  const updateChannel = (channel: Channel) => {
-    setChannels(prev =>
-      prev.map(c => c.id === channel.id ? channel : c)
-    )
   }
 
   const updateUserStatus = (userId: string, status: 'online' | 'offline') => {
@@ -156,6 +125,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         user.id === userId ? { ...user, status } : user
       )
     );
+    // Propagate the status update to WebSocket context
     wsUpdateUserStatus(userId, status);
   }
 
@@ -166,7 +136,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       if (before) {
         url.searchParams.append('before', before);
       }
-
+      
       const response = await fetch(url.toString(), {
         headers: {
             'X-Session-Id': localStorage.getItem('session') || '',
@@ -174,8 +144,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       const data = await response.json();
-
+      
+      // If this is a "load more" request, append to existing messages
       setMessages(prev => before ? [...prev, ...data.messages] : data.messages);
+      
+      // Update hasMoreMessages based on the API response
       setHasMoreMessages(data.hasMore);
     } catch (error) {
       console.error('Error loading messages:', error);
@@ -185,15 +158,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <ChatContext.Provider
-      value={{
-        channels,
-        users,
-        onlineUsers,
+    <ChatContext.Provider 
+      value={{ 
+        channels, 
+        users, 
+        onlineUsers, 
         offlineUsers,
         addChannel,
         removeChannel,
-        updateChannel,
         updateUserStatus,
         isLoadingChannels,
         messages,
