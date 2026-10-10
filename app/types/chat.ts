@@ -6,6 +6,8 @@ export type Channel = {
     created_at: number
     member_count: number
     member_ids: string[]
+    admin_ids: string[]
+    invite_policy: 'admin' | 'all'
 }
 
 export type Socials = {
