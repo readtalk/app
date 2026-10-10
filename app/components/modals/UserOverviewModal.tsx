@@ -107,7 +107,7 @@ export const UserOverviewModal = ({ onClose, userId }: UserOverviewModalProps) =
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.message || 'Failed to create DM');
+        throw new Error(data.error || data.message || 'Failed to create DM');
       }
 
       addChannel(data.channel);
