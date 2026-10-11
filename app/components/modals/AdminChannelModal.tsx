@@ -106,8 +106,7 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Manage {channel.name}</h2>
-        <button
-          onClick={onClose}
+        <button          
           className="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-800"
         >
           <X size={20} weight="bold" />
