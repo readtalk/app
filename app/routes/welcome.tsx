@@ -13,7 +13,7 @@ export default function Welcome() {
   }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
       <div className="w-full max-w-[400px] bg-white dark:bg-zinc-950">
         <div className="flex flex-col items-center gap-6">
 
