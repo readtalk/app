@@ -479,7 +479,7 @@ export default function AuthLayout() {
                         <>
                             <div className="px-2 mt-2 mb-1">
                                 <h3 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase">
-                                    Group
+                                    Family & Neighbors
                                 </h3>
                             </div>
                             {isLoadingChannels ? (
