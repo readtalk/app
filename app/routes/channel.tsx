@@ -482,7 +482,7 @@ export default function Channel() {
                                                     </div>
                                                 )}
                                                 <div className="min-w-0 flex flex-col items-start max-w-[75%]">
-                                                    <div className="bg-neutral-100 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm">
+                                                    <div className="bg-neutral-200 dark:bg-neutral-800 text-gray-900 dark:text-gray-100 px-3 py-2 rounded-2xl rounded-bl-sm shadow-sm">
                                                         <div className="flex items-baseline gap-2 mb-0.5">
                                                             <span className="font-medium text-xs">
                                                                 {displayName}
