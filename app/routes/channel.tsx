@@ -1,4 +1,3 @@
-//
 import { useParams, useNavigate } from 'react-router-dom';
 import { Hash, Lock, ArrowDown, DotsThree, ArrowLeft } from "@phosphor-icons/react";
 import { useChatContext } from "~/providers/ChatProvider";
@@ -322,7 +321,7 @@ export default function Channel() {
     };
 
     return (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-[100dvh]">
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
                 <button
                     onClick={() => navigate('/channel/0')}
