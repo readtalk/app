@@ -47,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-white dark:bg-zinc-950 px-4 py-8">
       <div className="fade-in w-full max-w-[400px]">
         <h3 className="text-center text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
           Login
