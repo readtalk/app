@@ -55,14 +55,6 @@ export const UserOverviewModal = ({ onClose, userId }: UserOverviewModalProps) =
     return (
       <div className="w-full max-w-md p-6 bg-neutral-100 dark:bg-neutral-900">
         <p className="text-center text-neutral-500">User not found</p>
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-800"
-          >
-            Close
-          </button>
-        </div>
       </div>
     );
   }
@@ -196,15 +188,6 @@ export const UserOverviewModal = ({ onClose, userId }: UserOverviewModalProps) =
         >
           <Phone size={18} weight="fill" />
           Call
-        </button>
-      </div>
-
-      <div className="mt-4 flex justify-center">
-        <button
-          onClick={onClose}
-          className="px-4 py-1.5 text-xs rounded-md text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800"
-        >
-          Close
         </button>
       </div>
     </div>
