@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { X, UserMinus, Crown, ArrowsLeftRight, Trash, Image } from "@phosphor-icons/react";
+import { UserMinus, Crown, ArrowsLeftRight, Trash } from "@phosphor-icons/react";
 import { useChatContext } from '~/providers/ChatProvider';
 import type { Channel } from '~/types/chat';
 
@@ -104,15 +104,7 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
 
   return (
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Manage {channel.name}</h2>
-        <button
-          onClick={onClose}
-          className="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-800"
-        >
-          <X size={20} weight="bold" />
-        </button>
-      </div>
+      <h2 className="text-xl font-semibold mb-4">Manage {channel.name}</h2>
 
       <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
         <label className="block text-sm font-medium mb-2">
