@@ -9,12 +9,14 @@ type AdminChannelModalProps = {
 }
 
 export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) => {
-  const { users, removeChannel } = useChatContext();
+  const { users, removeChannel, updateChannel } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(channel.avatar || '');
+  const [name, setName] = useState(channel.name);
+  const [description, setDescription] = useState(channel.description || '');
   const [transferTarget, setTransferTarget] = useState<string | null>(null);
 
   const channelMembers = useMemo(() => {
@@ -66,8 +68,15 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
     }
   };
 
-  const handleSaveAvatar = async () => {
-    await callEndpoint('avatar', 'PUT', { avatar: avatarUrl || null });
+  const handleSaveInfo = async () => {
+    const result = await callEndpoint('info', 'PUT', {
+      name: name.trim(),
+      description: description.trim() || null,
+    });
+
+    if (result?.channel) {
+      updateChannel(result.channel);
+    }
   };
 
   const handleDelete = async () => {
@@ -108,24 +117,51 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
 
       <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
         <label className="block text-sm font-medium mb-2">
+          Channel name
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Channel name"
+          className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
+        />
+      </div>
+
+      <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
+        <label className="block text-sm font-medium mb-2">
+          Description
+        </label>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What's this channel about?"
+          className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
+        />
+      </div>
+
+      <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
+        <label className="block text-sm font-medium mb-2">
           Group avatar URL
         </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://..."
-            className="flex-1 p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
-          />
-          <button
-            onClick={handleSaveAvatar}
-            disabled={isLoading}
-            className="px-3 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-50"
-          >
-            Save
-          </button>
-        </div>
+        <input
+          type="text"
+          value={avatarUrl}
+          onChange={(e) => setAvatarUrl(e.target.value)}
+          placeholder="https://..."
+          className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
+        />
+      </div>
+
+      <div className="mb-4">
+        <button
+          onClick={handleSaveInfo}
+          disabled={isLoading || !name.trim()}
+          className="w-full px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Saving...' : 'Save changes'}
+        </button>
       </div>
 
       <div className="mb-2">
