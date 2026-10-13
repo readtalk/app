@@ -72,8 +72,8 @@ export default function Channel() {
         const yesterday = new Date();
         yesterday.setDate(today.getDate() - 1);
 
-        if (d.toDateString() === today.toDateString()) return 'Hari ini';
-        if (d.toDateString() === yesterday.toDateString()) return 'Kemarin';
+        if (d.toDateString() === today.toDateString()) return 'Today';
+        if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
 
         return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     };
