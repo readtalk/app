@@ -9,11 +9,14 @@ type AdminChannelModalProps = {
 }
 
 export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) => {
-  const { users, removeChannel } = useChatContext();
+  const { users, removeChannel, updateChannel } = useChatContext();
   const currentUserId = localStorage.getItem('userId') || '';
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [name, setName] = useState(channel.name);
+  const [description, setDescription] = useState(channel.description || '');
   const [avatarUrl, setAvatarUrl] = useState(channel.avatar || '');
   const [transferTarget, setTransferTarget] = useState<string | null>(null);
 
@@ -66,8 +69,29 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
     }
   };
 
+  const handleSave = async () => {
+    setSuccessMessage(null);
+
+    const result = await callEndpoint('info', 'PUT', {
+      name: name.trim(),
+      description: description.trim() || null,
+    });
+
+    if (result?.channel) {
+      updateChannel(result.channel);
+      setSuccessMessage('Channel updated successfully!');
+      setTimeout(() => setSuccessMessage(null), 2000);
+    }
+  };
+
   const handleSaveAvatar = async () => {
-    await callEndpoint('avatar', 'PUT', { avatar: avatarUrl || null });
+    const result = await callEndpoint('avatar', 'PUT', { avatar: avatarUrl || null });
+
+    if (result?.channel) {
+      updateChannel(result.channel);
+      setSuccessMessage('Avatar updated successfully!');
+      setTimeout(() => setSuccessMessage(null), 2000);
+    }
   };
 
   const handleDelete = async () => {
@@ -105,6 +129,42 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
   return (
     <div className="w-full max-w-lg p-4 bg-neutral-100 dark:bg-neutral-900">
       <h2 className="text-xl font-semibold mb-4">Manage {channel.name}</h2>
+
+      <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
+        <label className="block text-sm font-medium mb-2">
+          Channel name
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Channel name"
+          className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
+        />
+      </div>
+
+      <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
+        <label className="block text-sm font-medium mb-2">
+          Description
+        </label>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What's this channel about?"
+          className="w-full p-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-transparent text-sm"
+        />
+      </div>
+
+      <div className="mb-4">
+        <button
+          onClick={handleSave}
+          disabled={isLoading || !name.trim()}
+          className="w-full px-4 py-2 text-sm rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Saving...' : 'Save changes'}
+        </button>
+      </div>
 
       <div className="mb-4 p-3 rounded-md bg-white dark:bg-neutral-800">
         <label className="block text-sm font-medium mb-2">
@@ -198,6 +258,12 @@ export const AdminChannelModal = ({ onClose, channel }: AdminChannelModalProps) 
       {error && (
         <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-600 dark:bg-green-900/20 dark:text-green-400">
+          {successMessage}
         </div>
       )}
 
