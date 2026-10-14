@@ -281,7 +281,7 @@ export default function AuthLayout() {
     );
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-[100dvh]">
             <div className="border-b border-neutral-200 dark:border-neutral-800 md:hidden" />
 
             <div className="flex flex-1 overflow-hidden">
