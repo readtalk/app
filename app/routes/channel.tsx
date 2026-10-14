@@ -406,7 +406,7 @@ export default function Channel() {
                 </div>
             </div>
 
-            <div className="bg-[url('/assets/bg-light.png')] dark:bg-[url('/assets/bg-dark.png')] ">
+            <div className="flex-1 min-h-0 relative bg-[url('/assets/bg-light.png')] dark:bg-[url('/assets/bg-dark.png')] bg-repeat">
                 <div
                     ref={messageContainerRef}
                     onScroll={handleScroll}
