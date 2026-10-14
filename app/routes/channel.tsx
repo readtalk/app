@@ -321,7 +321,7 @@ export default function Channel() {
     };
 
     return (
-        <div className="flex flex-col h-[100dvh]">
+        <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
                 <button
                     onClick={() => navigate('/channel/0')}
