@@ -1,11 +1,9 @@
-// dummy user data
-
 export const userProfile = () => {
   return {
     isSignedIn: false,
-    username: 'Kier Eagan',
+    username: 'READTalk Official',
     avatar: '/images/avatar.jpg',
-    email: 'kier@lumon.org',
+    email: 'email@readtalk.org',
     credits: 190,
   }
 }
