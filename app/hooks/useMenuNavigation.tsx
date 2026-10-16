@@ -2,12 +2,12 @@ import { useEffect, useRef } from 'react'
 
 type UseMenuNavigationProps = {
   menuRef: React.RefObject<HTMLElement | null>
-  direction?: 'vertical' | 'horizontal' // Default: vertical
+  direction?: 'horizontal' | 'vertical' // Default: vertical
 }
 
 export const useMenuNavigation = ({
   menuRef,
-  direction = 'vertical',
+  direction = 'horizontal',
 }: UseMenuNavigationProps) => {
   const activeElementRef = useRef<HTMLElement | null>(null)
 
