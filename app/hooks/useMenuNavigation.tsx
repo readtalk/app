@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 type UseMenuNavigationProps = {
   menuRef: React.RefObject<HTMLElement | null>
-  direction?: 'horizontal' | 'vertical' // Default: vertical
+  direction?: 'horizontal' | 'vertical' // Default: horizontal
 }
 
 export const useMenuNavigation = ({
