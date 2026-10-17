@@ -1,4 +1,3 @@
-//
 import { type RouteConfig, layout, route } from "@react-router/dev/routes";
 
 export default [    
@@ -10,5 +9,6 @@ export default [
     layout("components/layouts/AuthLayout.tsx", [
         route("overview", "routes/overview.tsx"),
         route("channel/:id", "routes/channel.tsx"),
+        route("users/:handle", "routes/users.tsx"),
 ]),
 ] satisfies RouteConfig;
