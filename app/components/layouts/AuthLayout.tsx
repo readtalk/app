@@ -8,6 +8,7 @@ import { CreateChannelModal } from '~/components/modals/CreateChannelModal';
 import { CreatePrivateModal } from '~/components/modals/CreatePrivateModal';
 import { ProfileModal } from '~/components/modals/ProfileModal';
 import { UserOverviewModal } from '~/components/modals/UserOverviewModal';
+import Overview from '~/routes/overview';
 
 export default function AuthLayout() {
     const location = useLocation();
@@ -472,6 +473,10 @@ export default function AuthLayout() {
                                     {user.first_name} {user.last_name}
                                 </button>
                             ))}
+                            
+                            <div className="md:hidden">
+                                <Overview />
+                            </div>
                         </>
                     )}
 
