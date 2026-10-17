@@ -130,7 +130,7 @@ export default function Overview() {
     }
 
     return (
-        <div className="p-4 max-w-2xl mx-auto">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
             <div className="mb-4">
                 <textarea
                     value={content}
