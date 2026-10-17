@@ -32,7 +32,6 @@ export default function Overview() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const myUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
     const sessionId = typeof window !== 'undefined' ? localStorage.getItem('session') || '' : '';
 
     const userMap = useMemo(() => {
@@ -44,7 +43,11 @@ export default function Overview() {
 
     const fetchUpdates = async () => {
         try {
-            const res = await fetch('https://readtalk.soeparnocorp.workers.dev/updates');
+            const res = await fetch('https://readtalk.soeparnocorp.workers.dev/updates', {
+                headers: {
+                    'X-Session-Id': sessionId
+                }
+            });
             const data = await res.json();
             if (data.success) {
                 setUpdates(data.updates);
@@ -92,7 +95,7 @@ export default function Overview() {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            
+
             const res = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/upload', {
                 method: 'POST',
                 headers: {
