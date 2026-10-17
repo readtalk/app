@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useChatContext } from "~/providers/ChatProvider";
+import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useChatContext } from '~/providers/ChatProvider';
 import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
+import type { User } from '~/types/chat';
 
 type Update = {
     id: string;
@@ -23,14 +24,15 @@ export default function UserProfile() {
     const { handle } = useParams();
     const navigate = useNavigate();
     const { users, channels, addChannel } = useChatContext();
-    
+
     const [updates, setUpdates] = useState<Update[]>([]);
     const [isLoadingUpdates, setIsLoadingUpdates] = useState(true);
     const [isCreatingChat, setIsCreatingChat] = useState(false);
 
+    const myUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+
     const username = handle?.startsWith('@') ? handle.slice(1) : handle;
-    const user = users.find(u => u.username === username);
-    const currentUserId = localStorage.getItem('userId') || '';
+    const user = useMemo(() => users.find(u => u.username === username), [users, username]);
 
     useEffect(() => {
         if (!user) return;
@@ -52,12 +54,12 @@ export default function UserProfile() {
     }, [user]);
 
     const handleChatClick = async () => {
-        if (!user) return;
+        if (!user || !myUserId) return;
 
         const existingDM = channels.find(c =>
             c.is_private &&
             c.member_ids.length === 2 &&
-            c.member_ids.includes(currentUserId) &&
+            c.member_ids.includes(myUserId) &&
             c.member_ids.includes(user.id)
         );
 
@@ -78,7 +80,7 @@ export default function UserProfile() {
                     name: 'Chat',
                     description: 'Private Mode',
                     is_private: true,
-                    member_ids: [currentUserId, user.id]
+                    member_ids: [myUserId, user.id]
                 })
             });
             const data = await response.json();
@@ -94,14 +96,7 @@ export default function UserProfile() {
     };
 
     if (!user) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full p-8">
-                <p className="text-neutral-500 text-lg">User not found</p>
-                <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-neutral-200 dark:bg-neutral-800 rounded-full text-sm font-medium">
-                    Go Back
-                </button>
-            </div>
-        );
+        return <div className="p-4">User not found</div>;
     }
 
     const fullName = `${user.first_name} ${user.last_name}`;
@@ -136,7 +131,7 @@ export default function UserProfile() {
                         {user.bio && <p className="text-neutral-900 dark:text-neutral-100 whitespace-pre-wrap">{user.bio}</p>}
                     </div>
                     
-                    {currentUserId !== user.id && (
+                    {myUserId !== user.id && (
                         <button 
                             onClick={handleChatClick}
                             disabled={isCreatingChat}
@@ -163,6 +158,12 @@ export default function UserProfile() {
                                     <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
+                                <div className="flex items-center gap-6 mt-3 text-neutral-500">
+                                    <button className="flex items-center gap-1 hover:text-blue-500 transition-colors"><ChatCircleDots size={18} /> <span className="text-sm">0</span></button>
+                                    <button className="flex items-center gap-1 hover:text-green-500 transition-colors"><Repeat size={18} /> <span className="text-sm">0</span></button>
+                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><Heart size={18} /> <span className="text-sm">0</span></button>
+                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><PaperPlaneRight size={18} /></button>
+                                </div>
                             </div>
                         </div>
                     ))
