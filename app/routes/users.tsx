@@ -1,23 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useChatContext } from "~/providers/ChatProvider";
-import { ChatCircle, Heart, Repeat, PaperPlaneRight, ArrowLeft, FacebookLogo, InstagramLogo, TiktokLogo, XLogo, YoutubeLogo, LinkedinLogo } from "@phosphor-icons/react";
-
-const BlueSkyLogo = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
-        <path d="M5.76537 7.01986C8.00566 8.70223 10.4166 12.1083 12 14.7675C13.5834 12.1083 15.9943 8.70223 18.2346 7.01986C19.8513 5.80651 22 4.92272 22 7.01986C22 7.42966 21.7649 10.1962 21.6369 10.5148C20.7999 12.8826 18.3087 13.4825 16.0844 13.1204C19.7118 13.7371 20.6294 15.9136 18.5524 18.0901C14.6345 22.1923 12.9286 17.0172 12.5263 15.751C12.4526 15.5213 12.4184 15.4142 12 15.4142C11.5816 15.4142 11.5474 15.5213 11.4737 15.751C11.0714 17.0172 9.36553 22.1923 5.44756 18.0901C3.37062 15.9136 4.28817 13.7371 7.91557 13.1204C5.69131 13.4825 3.20007 12.8826 2.36312 10.5148C2.23512 10.1962 2 7.42966 2 7.01986C2 4.92272 4.14868 5.80651 5.76537 7.01986Z" />
-    </svg>
-);
-
-const socialsMap: Record<string, { label: string; icon: any; url: (u: string) => string }> = {
-  bluesky: { label: "BlueSky", icon: BlueSkyLogo, url: (u) => `https://bsky.app/profile/${u}` },
-  facebook: { label: "Facebook", icon: FacebookLogo, url: (u) => `https://facebook.com/${u}` },
-  instagram: { label: "Instagram", icon: InstagramLogo, url: (u) => `https://instagram.com/${u}` },
-  tiktok: { label: "TikTok", icon: TiktokLogo, url: (u) => `https://tiktok.com/@${u}` },
-  x: { label: "X", icon: XLogo, url: (u) => `https://x.com/${u}` },
-  youtube: { label: "YouTube", icon: YoutubeLogo, url: (u) => `https://youtube.com/@${u}` },
-  linkedin: { label: "LinkedIn", icon: LinkedinLogo, url: (u) => `https://linkedin.com/in/${u}` },
-};
+import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
 
 type Update = {
     id: string;
@@ -122,11 +106,6 @@ export default function UserProfile() {
 
     const fullName = `${user.first_name} ${user.last_name}`;
     const initials = `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
-    const activeSocials = Object.entries(user.socials || {}).filter(([key, value]) => value && socialsMap[key]) as [string, string][];
-
-    const formatTime = (timestamp: number) => {
-        return new Date(timestamp * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    };
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-neutral-950 overflow-y-auto">
@@ -155,19 +134,6 @@ export default function UserProfile() {
                             {user.username && <p className="text-neutral-500 mt-1">@{user.username}</p>}
                         </div>
                         {user.bio && <p className="text-neutral-900 dark:text-neutral-100 whitespace-pre-wrap">{user.bio}</p>}
-                        {activeSocials.length > 0 && (
-                            <div className="flex flex-wrap gap-4 mt-2">
-                                {activeSocials.map(([key, value]) => {
-                                    const social = socialsMap[key];
-                                    const Icon = social.icon;
-                                    return (
-                                        <a key={key} href={social.url(value)} target="_blank" rel="noopener noreferrer" title={social.label} className="text-neutral-500 hover:text-red-500 transition-colors">
-                                            <Icon size={22} weight="fill" />
-                                        </a>
-                                    );
-                                })}
-                            </div>
-                        )}
                     </div>
                     
                     {currentUserId !== user.id && (
@@ -176,7 +142,7 @@ export default function UserProfile() {
                             disabled={isCreatingChat}
                             className="flex items-center gap-2 px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
                         >
-                            <ChatCircle size={18} weight="fill" /> {isCreatingChat ? 'Loading...' : 'Chat'}
+                            <ChatCircleDots size={18} weight="fill" /> {isCreatingChat ? 'Loading...' : 'Chat'}
                         </button>
                     )}
                 </div>
@@ -194,15 +160,9 @@ export default function UserProfile() {
                                 <div className="flex items-center gap-1">
                                     <span className="font-bold text-neutral-900 dark:text-white">{fullName}</span>
                                     {user.username && <span className="text-sm text-neutral-500">@{user.username}</span>}
-                                    <span className="text-sm text-neutral-500">· {formatTime(update.created_at)}</span>
+                                    <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
-                                <div className="flex items-center gap-6 mt-3 text-neutral-500">
-                                    <button className="flex items-center gap-1 hover:text-blue-500 transition-colors"><ChatCircle size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-green-500 transition-colors"><Repeat size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><Heart size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><PaperPlaneRight size={18} /></button>
-                                </div>
                             </div>
                         </div>
                     ))
