@@ -1,4 +1,3 @@
-//
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
@@ -31,16 +30,21 @@ export default function UserProfile() {
     const [isCreatingChat, setIsCreatingChat] = useState(false);
 
     const myUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+    const sessionId = typeof window !== 'undefined' ? localStorage.getItem('session') || '' : '';
 
     const username = handle?.startsWith('@') ? handle.slice(1) : handle;
     const user = useMemo(() => users.find(u => u.username === username), [users, username]);
 
     useEffect(() => {
         if (!user) return;
-        
+
         const fetchUpdates = async () => {
             try {
-                const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates?userId=${user.id}`);
+                const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates?userId=${user.id}`, {
+                    headers: {
+                        'X-Session-Id': sessionId
+                    }
+                });
                 const data = await res.json();
                 if (data.success) {
                     setUpdates(data.updates);
@@ -52,7 +56,7 @@ export default function UserProfile() {
             }
         };
         fetchUpdates();
-    }, [user]);
+    }, [user, sessionId]);
 
     const handleChatClick = async () => {
         if (!user || !myUserId) return;
@@ -75,7 +79,7 @@ export default function UserProfile() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Session-Id': localStorage.getItem('session') || ''
+                    'X-Session-Id': sessionId
                 },
                 body: JSON.stringify({
                     name: 'Chat',
@@ -131,7 +135,7 @@ export default function UserProfile() {
                         </div>
                         {user.bio && <p className="text-neutral-900 dark:text-neutral-100 whitespace-pre-wrap">{user.bio}</p>}
                     </div>
-                    
+
                     {myUserId !== user.id && (
                         <button 
                             onClick={handleChatClick}
