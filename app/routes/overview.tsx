@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useChatContext } from "~/providers/ChatProvider";
-import { UserOverviewModal } from "~/components/modals/UserOverviewModal";
 import { useModal } from "~/providers/ModalProvider";
-import { ChatCircle, Heart, Repeat, PaperPlaneRight, Image as ImageIcon } from "@phosphor-icons/react";
+import { UserOverviewModal } from "~/components/modals/UserOverviewModal";
+import { ChatCircle, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
 
 type Update = {
     id: string;
@@ -28,14 +28,11 @@ export default function Overview() {
     const [isLoading, setIsLoading] = useState(true);
     const [content, setContent] = useState("");
     const [isPosting, setIsPosting] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const myUserId = localStorage.getItem('userId');
-    const sessionId = localStorage.getItem('session');
+    const sessionId = localStorage.getItem('session') || '';
 
-    const userMap = users.reduce((acc, user) => {
+    const userMap = (users || []).reduce((acc, user) => {
         acc[user.id] = user;
         return acc;
     }, {} as Record<string, any>);
@@ -66,46 +63,19 @@ export default function Overview() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Session-Id': sessionId || ''
+                    'X-Session-Id': sessionId
                 },
-                body: JSON.stringify({ content, image_url: imageUrl })
+                body: JSON.stringify({ content })
             });
             const data = await res.json();
             if (data.success) {
                 setUpdates([data.update, ...updates]);
                 setContent("");
-                setImageUrl(null);
             }
         } catch (error) {
             console.error("Failed to post update", error);
         } finally {
             setIsPosting(false);
-        }
-    };
-
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setIsUploading(true);
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            const res = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/upload', {
-                method: 'POST',
-                headers: {
-                    'X-Session-Id': sessionId || '',
-                    'X-Channel-Id': 'updates'
-                },
-                body: formData
-            });
-            const data = await res.json();
-            if (data.success) {
-                setImageUrl(data.url);
-            }
-        } catch (error) {
-            console.error("Upload failed", error);
-        } finally {
-            setIsUploading(false);
         }
     };
 
@@ -134,37 +104,10 @@ export default function Overview() {
                             rows={3}
                             maxLength={140}
                         />
-                        {imageUrl && (
-                            <div className="relative mt-2 inline-block">
-                                <img src={imageUrl} alt="Preview" className="max-h-40 rounded-lg" />
-                                <button
-                                    onClick={() => setImageUrl(null)}
-                                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 text-xs"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        )}
                         <div className="flex items-center justify-between mt-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading}
-                                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-full transition-colors disabled:opacity-50"
-                                >
-                                    <ImageIcon size={20} />
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileSelect}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                                <span className={`text-sm ${content.length > 140 ? 'text-red-500' : 'text-neutral-400'}`}>
-                                    {content.length}/140
-                                </span>
-                            </div>
+                            <span className={`text-sm ${content.length > 140 ? 'text-red-500' : 'text-neutral-400'}`}>
+                                {content.length}/140
+                            </span>
                             <button
                                 onClick={handlePost}
                                 disabled={!content.trim() || isPosting || content.length > 140}
@@ -187,8 +130,8 @@ export default function Overview() {
                         const author = userMap[update.user_id];
                         if (!author) return null;
 
-                        const fullName = `${author.first_name} ${author.last_name}`;
-                        const initials = `${author.first_name[0]}${author.last_name[0]}`.toUpperCase();
+                        const fullName = `${author.first_name || ''} ${author.last_name || ''}`;
+                        const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`.toUpperCase();
 
                         return (
                             <div key={update.id} className="flex gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
