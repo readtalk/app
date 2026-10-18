@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
-import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight, UserPlus, UserCheck } from "@phosphor-icons/react";
+import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight, UserPlus, UserCheck, DotsThree, Pencil, Trash } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type Update = {
@@ -42,6 +42,11 @@ export default function UserProfile() {
     const [isCreatingChat, setIsCreatingChat] = useState(false);
     
     const [isFollowing, setIsFollowing] = useState(false);
+    
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState("");
+
     const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState<Record<string, Comment[]>>({});
     const [commentInput, setCommentInput] = useState("");
@@ -58,31 +63,69 @@ export default function UserProfile() {
     const username = handle?.startsWith('@') ? handle.slice(1) : handle;
     const user = useMemo(() => users.find(u => u.username === username), [users, username]);
 
+    const fetchUpdates = async (userId: string) => {
+        try {
+            const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates?userId=${userId}`, {
+                headers: {
+                    'X-Session-Id': sessionId
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setUpdates(data.updates);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user updates", error);
+        } finally {
+            setIsLoadingUpdates(false);
+        }
+    };
+
     useEffect(() => {
         if (!user || !currentUser) {
             setIsLoadingUpdates(false);
             return;
         }
-
-        const fetchUpdates = async () => {
-            try {
-                const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates?userId=${user.id}`, {
-                    headers: {
-                        'X-Session-Id': sessionId
-                    }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    setUpdates(data.updates);
-                }
-            } catch (error) {
-                console.error("Failed to fetch user updates", error);
-            } finally {
-                setIsLoadingUpdates(false);
-            }
-        };
-        fetchUpdates();
+        fetchUpdates(user.id);
     }, [user, currentUser, sessionId]);
+
+    const handleEditSubmit = async (id: string) => {
+        if (!editContent.trim() || editContent.length > 140) return;
+        
+        setUpdates(prev => prev.map(u => u.id === id ? { ...u, content: editContent } : u));
+        setEditingId(null);
+
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ content: editContent })
+            });
+        } catch (error) {
+            console.error("Failed to edit update", error);
+            if(user) fetchUpdates(user.id);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Hapus postingan ini?")) return;
+        
+        setUpdates(prev => prev.filter(u => u.id !== id));
+        setActiveMenuId(null);
+
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-Session-Id': sessionId }
+            });
+        } catch (error) {
+            console.error("Failed to delete update", error);
+            if(user) fetchUpdates(user.id);
+        }
+    };
 
     const handleLike = async (id: string) => {
         setUpdates(prev => prev.map(u => 
@@ -217,7 +260,7 @@ export default function UserProfile() {
     const isOnline = user.status === 'online';
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-neutral-950 overflow-y-auto">
+        <div className="flex flex-col h-full bg-white dark:bg-neutral-950 overflow-y-auto" onClick={() => setActiveMenuId(null)}>
             <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 p-4 flex items-center gap-4">
                 <button 
                     onClick={() => navigate('/overview')} 
@@ -326,16 +369,58 @@ export default function UserProfile() {
                 ) : (
                     updates.map((update) => {
                         const isCommentActive = activeCommentPostId === update.id;
+                        const isMyPost = myUserId === update.user_id;
+                        const isEditing = editingId === update.id;
+                        const isMenuOpen = activeMenuId === update.id;
+
                         return (
                             <div key={update.id} className="flex flex-col p-4 border-b border-neutral-200 dark:border-neutral-800">
                                 <div className="flex gap-3">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1">
-                                            <span className="font-bold text-neutral-900 dark:text-white">{fullName}</span>
-                                            {user.username && <span className="text-sm text-neutral-500">@{user.username}</span>}
-                                            <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-bold text-neutral-900 dark:text-white">{fullName}</span>
+                                                {user.username && <span className="text-sm text-neutral-500">@{user.username}</span>}
+                                                <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            
+                                            {isMyPost && !isEditing && (
+                                                <div className="relative">
+                                                    <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(isMenuOpen ? null : update.id); }} className="p-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                                                        <DotsThree size={20} weight="bold" />
+                                                    </button>
+                                                    {isMenuOpen && (
+                                                        <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-neutral-800 rounded-md shadow-lg border border-neutral-200 dark:border-neutral-700 z-10 py-1">
+                                                            <button onClick={() => { setEditingId(update.id); setEditContent(update.content); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
+                                                                <Pencil size={14} /> Edit
+                                                            </button>
+                                                            <button onClick={() => handleDelete(update.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
+                                                                <Trash size={14} /> Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
+
+                                        {isEditing ? (
+                                            <div className="mt-2">
+                                                <textarea
+                                                    value={editContent}
+                                                    onChange={(e) => setEditContent(e.target.value)}
+                                                    className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg p-2 text-neutral-900 dark:text-white text-sm resize-none outline-none"
+                                                    rows={2}
+                                                    maxLength={140}
+                                                />
+                                                <div className="flex gap-2 mt-1 justify-end">
+                                                    <button onClick={() => setEditingId(null)} className="px-3 py-1 text-xs text-neutral-500 hover:text-neutral-700">Cancel</button>
+                                                    <button onClick={() => handleEditSubmit(update.id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600">Save</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
+                                        )}
+
                                         <div className="flex items-center gap-6 mt-3 text-neutral-500">
                                             <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
                                                 <ChatCircleDots size={18} /> <span className="text-sm">{update.comment_count > 0 ? update.comment_count : ''}</span>
