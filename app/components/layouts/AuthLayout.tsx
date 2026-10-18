@@ -215,6 +215,7 @@ export default function AuthLayout() {
     };
 
     const isChatPage = location.pathname.startsWith('/channel/') && location.pathname !== '/channel/0';
+    const isUserProfilePage = location.pathname.startsWith('/users/');
 
     const tabTitle = {
         chat: 'READTalk',
@@ -291,7 +292,7 @@ export default function AuthLayout() {
                 </div>
 
                 <div className={`
-                    ${isChatPage ? 'hidden md:block' : 'block'}
+                    ${(isChatPage || isUserProfilePage) ? 'hidden md:block' : 'block'}
                     w-full md:w-96 px-3 pt-6 border-r border-neutral-200 transition-colors dark:border-neutral-800
                 `}>
                     <div className="px-2 mb-4 relative flex items-center justify-between">
@@ -456,7 +457,7 @@ export default function AuthLayout() {
                             {onlineUsers.map((user) => (
                                 <button
                                     key={user.id}
-                                    onClick={() => openModal(<UserOverviewModal onClose={closeModal} userId={user.id} />)}
+                                    onClick={() => navigate(`/users/@${user.username}`)}
                                     className="w-full flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer"
                                 >
                                     <span className="mr-2 size-2 rounded-full bg-green-500"></span>
@@ -466,7 +467,7 @@ export default function AuthLayout() {
                             {offlineUsers.map((user) => (
                                 <button
                                     key={user.id}
-                                    onClick={() => openModal(<UserOverviewModal onClose={closeModal} userId={user.id} />)}
+                                    onClick={() => navigate(`/users/@${user.username}`)}
                                     className="w-full flex items-center px-2 py-1.5 text-base text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded cursor-pointer opacity-60"
                                 >
                                     <span className="mr-2 size-2 rounded-full bg-neutral-400"></span>
@@ -630,7 +631,7 @@ export default function AuthLayout() {
                 </div>
             </div>
 
-            <div className={`border-t border-neutral-200 dark:border-neutral-800 ${isChatPage ? 'hidden' : 'md:hidden'}`}>
+            <div className={`border-t border-neutral-200 dark:border-neutral-800 ${(isChatPage || isUserProfilePage) ? 'hidden' : 'md:hidden'}`}>
                 <NavBar showInitials={false} />
             </div>
         </div>
