@@ -12,6 +12,13 @@ type Update = {
     created_at: number;
 };
 
+type Comment = {
+    id: string;
+    user_id: string;
+    content: string;
+    created_at: number;
+};
+
 const getColorFromName = (name: string) => {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
@@ -24,13 +31,20 @@ const getColorFromName = (name: string) => {
 export default function Overview() {
     const navigate = useNavigate();
     const { users } = useChatContext();
+    
     const [updates, setUpdates] = useState<Update[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    
     const [content, setContent] = useState("");
     const [isPosting, setIsPosting] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+    const [comments, setComments] = useState<Record<string, Comment[]>>({});
+    const [commentInput, setCommentInput] = useState("");
+    const [isSendingComment, setIsSendingComment] = useState(false);
 
     const sessionId = typeof window !== 'undefined' ? localStorage.getItem('session') || '' : '';
 
@@ -44,9 +58,7 @@ export default function Overview() {
     const fetchUpdates = async () => {
         try {
             const res = await fetch('https://readtalk.soeparnocorp.workers.dev/updates', {
-                headers: {
-                    'X-Session-Id': sessionId
-                }
+                headers: { 'X-Session-Id': sessionId }
             });
             const data = await res.json();
             if (data.success) {
@@ -95,7 +107,6 @@ export default function Overview() {
         try {
             const formData = new FormData();
             formData.append('file', file);
-
             const res = await fetch('https://readtalk.soeparnocorp.workers.dev/channel/upload', {
                 method: 'POST',
                 headers: {
@@ -105,9 +116,7 @@ export default function Overview() {
                 body: formData
             });
             const data = await res.json();
-            if (data.success) {
-                setImageUrl(data.url);
-            }
+            if (data.success) setImageUrl(data.url);
         } catch (error) {
             console.error("Upload failed", error);
         } finally {
@@ -115,10 +124,84 @@ export default function Overview() {
         }
     };
 
-    const handleUserClick = (username: string | null) => {
-        if (username) {
-            navigate(`/users/@${username}`);
+    const handleLike = async (id: string) => {
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/like`, {
+                method: 'POST',
+                headers: { 'X-Session-Id': sessionId }
+            });
+        } catch (error) {
+            console.error("Failed to like", error);
         }
+    };
+
+    const handleRepost = async (id: string) => {
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/repost`, {
+                method: 'POST',
+                headers: { 
+                    'X-Session-Id': sessionId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: null })
+            });
+        } catch (error) {
+            console.error("Failed to repost", error);
+        }
+    };
+
+    const handleToggleComments = async (id: string) => {
+        if (activeCommentPostId === id) {
+            setActiveCommentPostId(null);
+            return;
+        }
+        setActiveCommentPostId(id);
+        
+        if (!comments[id]) {
+            try {
+                const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
+                    headers: { 'X-Session-Id': sessionId }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setComments(prev => ({ ...prev, [id]: data.comments }));
+                }
+            } catch (error) {
+                console.error("Failed to fetch comments", error);
+            }
+        }
+    };
+
+    const handleSendComment = async (e: React.FormEvent, id: string) => {
+        e.preventDefault();
+        if (!commentInput.trim() || isSendingComment) return;
+        setIsSendingComment(true);
+        try {
+            const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ content: commentInput })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setComments(prev => ({
+                    ...prev,
+                    [id]: [...(prev[id] || []), data.comment]
+                }));
+                setCommentInput("");
+            }
+        } catch (error) {
+            console.error("Failed to send comment", error);
+        } finally {
+            setIsSendingComment(false);
+        }
+    };
+
+    const handleUserClick = (username: string | null) => {
+        if (username) navigate(`/users/@${username}`);
     };
 
     const formatTime = (timestamp: number) => {
@@ -191,55 +274,81 @@ export default function Overview() {
 
                         const fullName = `${author.first_name || ''} ${author.last_name || ''}`;
                         const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`.toUpperCase();
+                        const isCommentActive = activeCommentPostId === update.id;
 
                         return (
-                            <div key={update.id} className="flex gap-3 py-4 border-b border-neutral-200 dark:border-neutral-800">
-                                <button onClick={() => handleUserClick(author.username)} className="flex-shrink-0">
-                                    {author.avatar ? (
-                                        <img src={author.avatar} alt={fullName} className="size-10 rounded-full object-cover" />
-                                    ) : (
-                                        <div
-                                            className="size-10 rounded-full flex items-center justify-center text-white font-medium"
-                                            style={{ backgroundColor: getColorFromName(fullName) }}
-                                        >
-                                            {initials}
-                                        </div>
-                                    )}
-                                </button>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1">
-                                        <button onClick={() => handleUserClick(author.username)} className="font-bold text-neutral-900 dark:text-white hover:underline">
-                                            {fullName}
-                                        </button>
-                                        {author.username && (
-                                            <span className="text-sm text-neutral-500">@{author.username}</span>
+                            <div key={update.id} className="flex flex-col py-4 border-b border-neutral-200 dark:border-neutral-800">
+                                <div className="flex gap-3">
+                                    <button onClick={() => handleUserClick(author.username)} className="flex-shrink-0">
+                                        {author.avatar ? (
+                                            <img src={author.avatar} alt={fullName} className="size-10 rounded-full object-cover" />
+                                        ) : (
+                                            <div className="size-10 rounded-full flex items-center justify-center text-white font-medium" style={{ backgroundColor: getColorFromName(fullName) }}>
+                                                {initials}
+                                            </div>
                                         )}
-                                        <span className="text-sm text-neutral-500">· {formatTime(update.created_at)}</span>
-                                    </div>
-                                    <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">
-                                        {update.content}
-                                    </p>
-                                    {update.image_url && (
-                                        <div className="mt-2">
-                                            <img src={update.image_url} alt="Attached" className="max-h-96 rounded-xl border border-neutral-200 dark:border-neutral-800" />
+                                    </button>
+
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1">
+                                            <button onClick={() => handleUserClick(author.username)} className="font-bold text-neutral-900 dark:text-white hover:underline">
+                                                {fullName}
+                                            </button>
+                                            {author.username && <span className="text-sm text-neutral-500">@{author.username}</span>}
+                                            <span className="text-sm text-neutral-500">· {formatTime(update.created_at)}</span>
                                         </div>
-                                    )}
-                                    <div className="flex items-center gap-6 mt-3 text-neutral-500">
-                                        <button className="flex items-center gap-1 hover:text-blue-500 transition-colors">
-                                            <ChatCircle size={18} /> <span className="text-sm">0</span>
-                                        </button>
-                                        <button className="flex items-center gap-1 hover:text-green-500 transition-colors">
-                                            <Repeat size={18} /> <span className="text-sm">0</span>
-                                        </button>
-                                        <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
-                                            <Heart size={18} /> <span className="text-sm">0</span>
-                                        </button>
-                                        <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
-                                            <PaperPlaneRight size={18} />
-                                        </button>
+                                        <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">
+                                            {update.content}
+                                        </p>
+                                        {update.image_url && (
+                                            <div className="mt-2">
+                                                <img src={update.image_url} alt="Attached" className="max-h-96 rounded-xl border border-neutral-200 dark:border-neutral-800" />
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-6 mt-3 text-neutral-500">
+                                            <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
+                                                <ChatCircle size={18} /> <span className="text-sm">{isCommentActive && comments[update.id] ? comments[update.id].length : ''}</span>
+                                            </button>
+                                            <button onClick={() => handleRepost(update.id)} className="flex items-center gap-1 hover:text-green-500 transition-colors">
+                                                <Repeat size={18} /> <span className="text-sm"></span>
+                                            </button>
+                                            <button onClick={() => handleLike(update.id)} className="flex items-center gap-1 hover:text-red-500 transition-colors">
+                                                <Heart size={18} /> <span className="text-sm"></span>
+                                            </button>
+                                            <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
+                                                <PaperPlaneRight size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+
+                                {isCommentActive && (
+                                    <div className="mt-3 ml-12 border-l-2 border-neutral-200 dark:border-neutral-800 pl-3">
+                                        {comments[update.id]?.map((comment) => {
+                                            const commentAuthor = userMap[comment.user_id];
+                                            if (!commentAuthor) return null;
+                                            return (
+                                                <div key={comment.id} className="mb-3 text-sm">
+                                                    <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
+                                                    <span className="text-neutral-500 ml-1 text-xs">· {formatTime(comment.created_at)}</span>
+                                                    <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                </div>
+                                            );
+                                        })}
+                                        <form onSubmit={(e) => handleSendComment(e, update.id)} className="flex items-center gap-2 mt-2">
+                                            <input
+                                                type="text"
+                                                value={commentInput}
+                                                onChange={(e) => setCommentInput(e.target.value)}
+                                                placeholder="Write a reply..."
+                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700"
+                                            />
+                                            <button type="submit" disabled={!commentInput.trim() || isSendingComment} className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50">
+                                                Reply
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
                             </div>
                         );
                     })
