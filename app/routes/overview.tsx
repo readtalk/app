@@ -132,7 +132,7 @@ export default function Overview() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Hapus postingan ini?")) return;
+        if (!confirm("Delete this update?")) return;
         
         setUpdates(prev => prev.filter(u => u.id !== id));
         setActiveMenuId(null);
