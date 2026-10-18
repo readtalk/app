@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
-import { ChatCircleDots, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
+import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type Update = {
@@ -79,6 +79,19 @@ export default function UserProfile() {
 
     return (
         <div className="flex flex-col h-full bg-white dark:bg-neutral-950 overflow-y-auto">
+            <div className="sticky top-0 z-10 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 p-4 flex items-center gap-4">
+                <button 
+                    onClick={() => navigate('/overview')} 
+                    className="md:hidden p-2 -ml-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded"
+                >
+                    <ArrowLeft size={20} weight="bold" />
+                </button>
+                <div>
+                    <h1 className="text-lg font-bold text-neutral-900 dark:text-white">{fullName}</h1>
+                    <p className="text-sm text-neutral-500">{updates.length} Updates</p>
+                </div>
+            </div>
+
             <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-4">
