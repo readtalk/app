@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatContext } from "~/providers/ChatProvider";
-import { ChatCircle, Heart, Repeat, PaperPlaneRight, Image as ImageIcon } from "@phosphor-icons/react";
-import type { User } from "~/types/chat";
+import { ChatCircle, Heart, Repeat, PaperPlaneRight, Image as ImageIcon, DotsThree, Pencil, Trash } from "@phosphor-icons/react";
+import type { User } from '~/types/chat';
 
 type Update = {
     id: string;
@@ -45,6 +45,10 @@ export default function Overview() {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editContent, setEditContent] = useState("");
 
     const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState<Record<string, Comment[]>>({});
@@ -103,6 +107,44 @@ export default function Overview() {
             console.error("Failed to post update", error);
         } finally {
             setIsPosting(false);
+        }
+    };
+
+    const handleEditSubmit = async (id: string) => {
+        if (!editContent.trim() || editContent.length > 140) return;
+        
+        setUpdates(prev => prev.map(u => u.id === id ? { ...u, content: editContent } : u));
+        setEditingId(null);
+
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ content: editContent })
+            });
+        } catch (error) {
+            console.error("Failed to edit update", error);
+            fetchUpdates();
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Hapus postingan ini?")) return;
+        
+        setUpdates(prev => prev.filter(u => u.id !== id));
+        setActiveMenuId(null);
+
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-Session-Id': sessionId }
+            });
+        } catch (error) {
+            console.error("Failed to delete update", error);
+            fetchUpdates();
         }
     };
 
@@ -263,7 +305,7 @@ export default function Overview() {
     }
 
     return (
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800" onClick={() => setActiveMenuId(null)}>
             <div className="mb-4">
                 <textarea
                     value={content}
@@ -325,6 +367,9 @@ export default function Overview() {
                         const fullName = `${author.first_name || ''} ${author.last_name || ''}`;
                         const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`.toUpperCase();
                         const isCommentActive = activeCommentPostId === update.id;
+                        const isMyPost = currentUserId === update.user_id;
+                        const isEditing = editingId === update.id;
+                        const isMenuOpen = activeMenuId === update.id;
 
                         return (
                             <div key={update.id} className="flex flex-col py-4 border-b border-neutral-200 dark:border-neutral-800">
@@ -340,21 +385,60 @@ export default function Overview() {
                                     </button>
 
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1">
-                                            <button onClick={() => handleUserClick(author.username)} className="font-bold text-neutral-900 dark:text-white hover:underline">
-                                                {fullName}
-                                            </button>
-                                            {author.username && <span className="text-sm text-neutral-500">@{author.username}</span>}
-                                            <span className="text-sm text-neutral-500">· {formatTime(update.created_at)}</span>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1">
+                                                <button onClick={() => handleUserClick(author.username)} className="font-bold text-neutral-900 dark:text-white hover:underline">
+                                                    {fullName}
+                                                </button>
+                                                {author.username && <span className="text-sm text-neutral-500">@{author.username}</span>}
+                                                <span className="text-sm text-neutral-500">· {formatTime(update.created_at)}</span>
+                                            </div>
+                                            
+                                            {isMyPost && !isEditing && (
+                                                <div className="relative">
+                                                    <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(isMenuOpen ? null : update.id); }} className="p-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">
+                                                        <DotsThree size={20} weight="bold" />
+                                                    </button>
+                                                    {isMenuOpen && (
+                                                        <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-neutral-800 rounded-md shadow-lg border border-neutral-200 dark:border-neutral-700 z-10 py-1">
+                                                            <button onClick={() => { setEditingId(update.id); setEditContent(update.content); setActiveMenuId(null); }} className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
+                                                                <Pencil size={14} /> Edit
+                                                            </button>
+                                                            <button onClick={() => handleDelete(update.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
+                                                                <Trash size={14} /> Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">
-                                            {update.content}
-                                        </p>
-                                        {update.image_url && (
+
+                                        {isEditing ? (
+                                            <div className="mt-2">
+                                                <textarea
+                                                    value={editContent}
+                                                    onChange={(e) => setEditContent(e.target.value)}
+                                                    className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg p-2 text-neutral-900 dark:text-white text-sm resize-none outline-none"
+                                                    rows={2}
+                                                    maxLength={140}
+                                                />
+                                                <div className="flex gap-2 mt-1 justify-end">
+                                                    <button onClick={() => setEditingId(null)} className="px-3 py-1 text-xs text-neutral-500 hover:text-neutral-700">Cancel</button>
+                                                    <button onClick={() => handleEditSubmit(update.id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600">Save</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">
+                                                {update.content}
+                                            </p>
+                                        )}
+
+                                        {update.image_url && !isEditing && (
                                             <div className="mt-2">
                                                 <img src={update.image_url} alt="Attached" className="max-h-96 rounded-xl border border-neutral-200 dark:border-neutral-800" />
                                             </div>
                                         )}
+
                                         <div className="flex items-center gap-6 mt-3 text-neutral-500">
                                             <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
                                                 <ChatCircle size={18} /> <span className="text-sm">{update.comment_count > 0 ? update.comment_count : ''}</span>
