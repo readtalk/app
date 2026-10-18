@@ -10,6 +10,11 @@ type Update = {
     content: string;
     image_url: string | null;
     created_at: number;
+    like_count: number;
+    comment_count: number;
+    repost_count: number;
+    is_liked: boolean;
+    is_reposted: boolean;
 };
 
 type Comment = {
@@ -90,7 +95,7 @@ export default function Overview() {
             });
             const data = await res.json();
             if (data.success) {
-                setUpdates([data.update, ...updates]);
+                setUpdates([{ ...data.update, like_count: 0, comment_count: 0, repost_count: 0, is_liked: false, is_reposted: false }, ...updates]);
                 setContent("");
                 setImageUrl(null);
             }
@@ -126,6 +131,12 @@ export default function Overview() {
     };
 
     const handleLike = async (id: string) => {
+        setUpdates(prev => prev.map(u => 
+            u.id === id 
+                ? { ...u, is_liked: !u.is_liked, like_count: u.is_liked ? u.like_count - 1 : u.like_count + 1 } 
+                : u
+        ));
+
         try {
             await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/like`, {
                 method: 'POST',
@@ -133,10 +144,21 @@ export default function Overview() {
             });
         } catch (error) {
             console.error("Failed to like", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id 
+                    ? { ...u, is_liked: !u.is_liked, like_count: u.is_liked ? u.like_count - 1 : u.like_count + 1 } 
+                    : u
+            ));
         }
     };
 
     const handleRepost = async (id: string) => {
+        setUpdates(prev => prev.map(u => 
+            u.id === id 
+                ? { ...u, is_reposted: !u.is_reposted, repost_count: u.is_reposted ? u.repost_count - 1 : u.repost_count + 1 } 
+                : u
+        ));
+
         try {
             await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/repost`, {
                 method: 'POST',
@@ -148,6 +170,11 @@ export default function Overview() {
             });
         } catch (error) {
             console.error("Failed to repost", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id 
+                    ? { ...u, is_reposted: !u.is_reposted, repost_count: u.is_reposted ? u.repost_count - 1 : u.repost_count + 1 } 
+                    : u
+            ));
         }
     };
 
@@ -188,6 +215,10 @@ export default function Overview() {
             ...prev,
             [id]: [...(prev[id] || []), tempComment]
         }));
+
+        setUpdates(prev => prev.map(u => 
+            u.id === id ? { ...u, comment_count: u.comment_count + 1 } : u
+        ));
         
         setCommentInput("");
         setIsSendingComment(true);
@@ -211,6 +242,9 @@ export default function Overview() {
             }
         } catch (error) {
             console.error("Failed to send comment", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id ? { ...u, comment_count: u.comment_count - 1 } : u
+            ));
         } finally {
             setIsSendingComment(false);
         }
@@ -323,13 +357,13 @@ export default function Overview() {
                                         )}
                                         <div className="flex items-center gap-6 mt-3 text-neutral-500">
                                             <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
-                                                <ChatCircle size={18} /> <span className="text-sm">{isCommentActive && comments[update.id] ? comments[update.id].length : ''}</span>
+                                                <ChatCircle size={18} /> <span className="text-sm">{update.comment_count > 0 ? update.comment_count : ''}</span>
                                             </button>
-                                            <button onClick={() => handleRepost(update.id)} className="flex items-center gap-1 hover:text-green-500 transition-colors">
-                                                <Repeat size={18} /> <span className="text-sm"></span>
+                                            <button onClick={() => handleRepost(update.id)} className={`flex items-center gap-1 transition-colors ${update.is_reposted ? 'text-green-500' : 'hover:text-green-500'}`}>
+                                                <Repeat size={18} /> <span className="text-sm">{update.repost_count > 0 ? update.repost_count : ''}</span>
                                             </button>
-                                            <button onClick={() => handleLike(update.id)} className="flex items-center gap-1 hover:text-red-500 transition-colors">
-                                                <Heart size={18} /> <span className="text-sm"></span>
+                                            <button onClick={() => handleLike(update.id)} className={`flex items-center gap-1 transition-colors ${update.is_liked ? 'text-red-500' : 'hover:text-red-500'}`}>
+                                                <Heart size={18} weight={update.is_liked ? "fill" : "regular"} /> <span className="text-sm">{update.like_count > 0 ? update.like_count : ''}</span>
                                             </button>
                                             <button className="flex items-center gap-1 hover:text-red-500 transition-colors">
                                                 <PaperPlaneRight size={18} />
