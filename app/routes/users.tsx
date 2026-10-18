@@ -1,10 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useChatContext } from '~/providers/ChatProvider';
-import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight } from "@phosphor-icons/react";
+import { ChatCircleDots, ArrowLeft, Heart, Repeat, PaperPlaneRight, UserPlus, UserCheck } from "@phosphor-icons/react";
 import type { User } from '~/types/chat';
 
 type Update = {
+    id: string;
+    user_id: string;
+    content: string;
+    created_at: number;
+};
+
+type Comment = {
     id: string;
     user_id: string;
     content: string;
@@ -28,6 +35,12 @@ export default function UserProfile() {
     const [updates, setUpdates] = useState<Update[]>([]);
     const [isLoadingUpdates, setIsLoadingUpdates] = useState(true);
     const [isCreatingChat, setIsCreatingChat] = useState(false);
+    
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+    const [comments, setComments] = useState<Record<string, Comment[]>>({});
+    const [commentInput, setCommentInput] = useState("");
+    const [isSendingComment, setIsSendingComment] = useState(false);
 
     const myUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
     const sessionId = typeof window !== 'undefined' ? localStorage.getItem('session') || '' : '';
@@ -66,6 +79,82 @@ export default function UserProfile() {
         fetchUpdates();
     }, [user, currentUser, sessionId]);
 
+    const handleLike = async (id: string) => {
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/like`, {
+                method: 'POST',
+                headers: { 'X-Session-Id': sessionId }
+            });
+        } catch (error) {
+            console.error("Failed to like", error);
+        }
+    };
+
+    const handleRepost = async (id: string) => {
+        try {
+            await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/repost`, {
+                method: 'POST',
+                headers: { 
+                    'X-Session-Id': sessionId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: null })
+            });
+        } catch (error) {
+            console.error("Failed to repost", error);
+        }
+    };
+
+    const handleToggleComments = async (id: string) => {
+        if (activeCommentPostId === id) {
+            setActiveCommentPostId(null);
+            return;
+        }
+        setActiveCommentPostId(id);
+        
+        if (!comments[id]) {
+            try {
+                const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
+                    headers: { 'X-Session-Id': sessionId }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setComments(prev => ({ ...prev, [id]: data.comments }));
+                }
+            } catch (error) {
+                console.error("Failed to fetch comments", error);
+            }
+        }
+    };
+
+    const handleSendComment = async (e: React.FormEvent, id: string) => {
+        e.preventDefault();
+        if (!commentInput.trim() || isSendingComment) return;
+        setIsSendingComment(true);
+        try {
+            const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({ content: commentInput })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setComments(prev => ({
+                    ...prev,
+                    [id]: [...(prev[id] || []), data.comment]
+                }));
+                setCommentInput("");
+            }
+        } catch (error) {
+            console.error("Failed to send comment", error);
+        } finally {
+            setIsSendingComment(false);
+        }
+    };
+
     if (!currentUser) {
         return <div className="p-4 text-center text-neutral-500">?</div>;
     }
@@ -96,8 +185,6 @@ export default function UserProfile() {
             <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-4">
-                        
-                        {/* CONTAINER AVATAR YANG DIPERBAIKI */}
                         <div className="relative w-24 h-24">
                             {user.avatar ? (
                                 <img src={user.avatar} alt={fullName} className="w-24 h-24 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800" />
@@ -117,51 +204,67 @@ export default function UserProfile() {
                     </div>
 
                     {myUserId !== user.id && (
-                        <button 
-                            onClick={async () => {
-                                const existingDM = channels.find(c =>
-                                    c.is_private &&
-                                    c.member_ids.length === 2 &&
-                                    c.member_ids.includes(myUserId!) &&
-                                    c.member_ids.includes(user.id)
-                                );
-                        
-                                if (existingDM) {
-                                    navigate(`/channel/${existingDM.id}`);
-                                    return;
-                                }
-                        
-                                setIsCreatingChat(true);
-                                try {
-                                    const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channels', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-Session-Id': sessionId
-                                        },
-                                        body: JSON.stringify({
-                                            name: 'Chat',
-                                            description: 'Private Mode',
-                                            is_private: true,
-                                            member_ids: [myUserId, user.id]
-                                        })
-                                    });
-                                    const data = await response.json();
-                                    if (data.success) {
-                                        addChannel(data.channel);
-                                        navigate(`/channel/${data.channel.id}`);
-                                    }
-                                } catch (error) {
-                                    console.error("Failed to create DM", error);
-                                } finally {
-                                    setIsCreatingChat(false);
-                                }
-                            }}
-                            disabled={isCreatingChat}
-                            className="flex items-center gap-2 px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
-                        >
-                            <ChatCircleDots size={18} weight="fill" /> {isCreatingChat ? 'Loading...' : 'Chat'}
-                        </button>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => setIsFollowing(!isFollowing)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                                    isFollowing 
+                                    ? 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800' 
+                                    : 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-transparent hover:bg-neutral-800 dark:hover:bg-neutral-100'
+                                }`}
+                            >
+                                {isFollowing ? <UserCheck size={18} /> : <UserPlus size={18} />}
+                                {isFollowing ? 'Following' : 'Follow'}
+                            </button>
+
+                            {isFollowing && (
+                                <button 
+                                    onClick={async () => {
+                                        const existingDM = channels.find(c =>
+                                            c.is_private &&
+                                            c.member_ids.length === 2 &&
+                                            c.member_ids.includes(myUserId!) &&
+                                            c.member_ids.includes(user.id)
+                                        );
+                                
+                                        if (existingDM) {
+                                            navigate(`/channel/${existingDM.id}`);
+                                            return;
+                                        }
+                                
+                                        setIsCreatingChat(true);
+                                        try {
+                                            const response = await fetch('https://readtalk.soeparnocorp.workers.dev/channels', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-Session-Id': sessionId
+                                                },
+                                                body: JSON.stringify({
+                                                    name: 'Chat',
+                                                    description: 'Private Mode',
+                                                    is_private: true,
+                                                    member_ids: [myUserId, user.id]
+                                                })
+                                            });
+                                            const data = await response.json();
+                                            if (data.success) {
+                                                addChannel(data.channel);
+                                                navigate(`/channel/${data.channel.id}`);
+                                            }
+                                        } catch (error) {
+                                            console.error("Failed to create DM", error);
+                                        } finally {
+                                            setIsCreatingChat(false);
+                                        }
+                                    }}
+                                    disabled={isCreatingChat}
+                                    className="flex items-center gap-2 px-5 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
+                                >
+                                    <ChatCircleDots size={18} weight="fill" /> {isCreatingChat ? 'Loading...' : 'Chat'}
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
@@ -172,24 +275,59 @@ export default function UserProfile() {
                 ) : updates.length === 0 ? (
                     <div className="flex justify-center p-8 text-neutral-500">Belum ada update.</div>
                 ) : (
-                    updates.map((update) => (
-                        <div key={update.id} className="flex gap-3 p-4 border-b border-neutral-200 dark:border-neutral-800">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1">
-                                    <span className="font-bold text-neutral-900 dark:text-white">{fullName}</span>
-                                    {user.username && <span className="text-sm text-neutral-500">@{user.username}</span>}
-                                    <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                    updates.map((update) => {
+                        const isCommentActive = activeCommentPostId === update.id;
+                        return (
+                            <div key={update.id} className="flex flex-col p-4 border-b border-neutral-200 dark:border-neutral-800">
+                                <div className="flex gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1">
+                                            <span className="font-bold text-neutral-900 dark:text-white">{fullName}</span>
+                                            {user.username && <span className="text-sm text-neutral-500">@{user.username}</span>}
+                                            <span className="text-sm text-neutral-500">· {new Date(update.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
+                                        <div className="flex items-center gap-6 mt-3 text-neutral-500">
+                                            <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
+                                                <ChatCircleDots size={18} /> <span className="text-sm">{isCommentActive && comments[update.id] ? comments[update.id].length : ''}</span>
+                                            </button>
+                                            <button onClick={() => handleRepost(update.id)} className="flex items-center gap-1 hover:text-green-500 transition-colors"><Repeat size={18} /> <span className="text-sm"></span></button>
+                                            <button onClick={() => handleLike(update.id)} className="flex items-center gap-1 hover:text-red-500 transition-colors"><Heart size={18} /> <span className="text-sm"></span></button>
+                                            <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><PaperPlaneRight size={18} /></button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
-                                <div className="flex items-center gap-6 mt-3 text-neutral-500">
-                                    <button className="flex items-center gap-1 hover:text-blue-500 transition-colors"><ChatCircleDots size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-green-500 transition-colors"><Repeat size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><Heart size={18} /> <span className="text-sm">0</span></button>
-                                    <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><PaperPlaneRight size={18} /></button>
-                                </div>
+
+                                {isCommentActive && (
+                                    <div className="mt-3 ml-12 border-l-2 border-neutral-200 dark:border-neutral-800 pl-3">
+                                        {comments[update.id]?.map((comment) => {
+                                            const commentAuthor = users.find(u => u.id === comment.user_id);
+                                            if (!commentAuthor) return null;
+                                            return (
+                                                <div key={comment.id} className="mb-3 text-sm">
+                                                    <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
+                                                    <span className="text-neutral-500 ml-1 text-xs">· {new Date(comment.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                </div>
+                                            );
+                                        })}
+                                        <form onSubmit={(e) => handleSendComment(e, update.id)} className="flex items-center gap-2 mt-2">
+                                            <input
+                                                type="text"
+                                                value={commentInput}
+                                                onChange={(e) => setCommentInput(e.target.value)}
+                                                placeholder="Write a reply..."
+                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700"
+                                            />
+                                            <button type="submit" disabled={!commentInput.trim() || isSendingComment} className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50">
+                                                Reply
+                                            </button>
+                                        </form>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
         </div>
