@@ -9,6 +9,11 @@ type Update = {
     user_id: string;
     content: string;
     created_at: number;
+    like_count: number;
+    comment_count: number;
+    repost_count: number;
+    is_liked: boolean;
+    is_reposted: boolean;
 };
 
 type Comment = {
@@ -80,6 +85,12 @@ export default function UserProfile() {
     }, [user, currentUser, sessionId]);
 
     const handleLike = async (id: string) => {
+        setUpdates(prev => prev.map(u => 
+            u.id === id 
+                ? { ...u, is_liked: !u.is_liked, like_count: u.is_liked ? u.like_count - 1 : u.like_count + 1 } 
+                : u
+        ));
+
         try {
             await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/like`, {
                 method: 'POST',
@@ -87,10 +98,21 @@ export default function UserProfile() {
             });
         } catch (error) {
             console.error("Failed to like", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id 
+                    ? { ...u, is_liked: !u.is_liked, like_count: u.is_liked ? u.like_count - 1 : u.like_count + 1 } 
+                    : u
+            ));
         }
     };
 
     const handleRepost = async (id: string) => {
+        setUpdates(prev => prev.map(u => 
+            u.id === id 
+                ? { ...u, is_reposted: !u.is_reposted, repost_count: u.is_reposted ? u.repost_count - 1 : u.repost_count + 1 } 
+                : u
+        ));
+
         try {
             await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/repost`, {
                 method: 'POST',
@@ -102,6 +124,11 @@ export default function UserProfile() {
             });
         } catch (error) {
             console.error("Failed to repost", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id 
+                    ? { ...u, is_reposted: !u.is_reposted, repost_count: u.is_reposted ? u.repost_count - 1 : u.repost_count + 1 } 
+                    : u
+            ));
         }
     };
 
@@ -130,7 +157,26 @@ export default function UserProfile() {
     const handleSendComment = async (e: React.FormEvent, id: string) => {
         e.preventDefault();
         if (!commentInput.trim() || isSendingComment) return;
+        
+        const tempComment = {
+            id: `temp-${Date.now()}`,
+            user_id: myUserId || '',
+            content: commentInput,
+            created_at: Math.floor(Date.now() / 1000)
+        };
+        
+        setComments(prev => ({
+            ...prev,
+            [id]: [...(prev[id] || []), tempComment]
+        }));
+
+        setUpdates(prev => prev.map(u => 
+            u.id === id ? { ...u, comment_count: u.comment_count + 1 } : u
+        ));
+        
+        setCommentInput("");
         setIsSendingComment(true);
+
         try {
             const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
                 method: 'POST',
@@ -138,18 +184,21 @@ export default function UserProfile() {
                     'Content-Type': 'application/json',
                     'X-Session-Id': sessionId
                 },
-                body: JSON.stringify({ content: commentInput })
+                body: JSON.stringify({ content: tempComment.content })
             });
             const data = await res.json();
+            
             if (data.success) {
                 setComments(prev => ({
                     ...prev,
-                    [id]: [...(prev[id] || []), data.comment]
+                    [id]: prev[id].map(c => c.id === tempComment.id ? data.comment : c)
                 }));
-                setCommentInput("");
             }
         } catch (error) {
             console.error("Failed to send comment", error);
+            setUpdates(prev => prev.map(u => 
+                u.id === id ? { ...u, comment_count: u.comment_count - 1 } : u
+            ));
         } finally {
             setIsSendingComment(false);
         }
@@ -289,10 +338,14 @@ export default function UserProfile() {
                                         <p className="mt-1 text-neutral-900 dark:text-white whitespace-pre-wrap break-words">{update.content}</p>
                                         <div className="flex items-center gap-6 mt-3 text-neutral-500">
                                             <button onClick={() => handleToggleComments(update.id)} className={`flex items-center gap-1 transition-colors ${isCommentActive ? 'text-blue-500' : 'hover:text-blue-500'}`}>
-                                                <ChatCircleDots size={18} /> <span className="text-sm">{isCommentActive && comments[update.id] ? comments[update.id].length : ''}</span>
+                                                <ChatCircleDots size={18} /> <span className="text-sm">{update.comment_count > 0 ? update.comment_count : ''}</span>
                                             </button>
-                                            <button onClick={() => handleRepost(update.id)} className="flex items-center gap-1 hover:text-green-500 transition-colors"><Repeat size={18} /> <span className="text-sm"></span></button>
-                                            <button onClick={() => handleLike(update.id)} className="flex items-center gap-1 hover:text-red-500 transition-colors"><Heart size={18} /> <span className="text-sm"></span></button>
+                                            <button onClick={() => handleRepost(update.id)} className={`flex items-center gap-1 transition-colors ${update.is_reposted ? 'text-green-500' : 'hover:text-green-500'}`}>
+                                                <Repeat size={18} /> <span className="text-sm">{update.repost_count > 0 ? update.repost_count : ''}</span>
+                                            </button>
+                                            <button onClick={() => handleLike(update.id)} className={`flex items-center gap-1 transition-colors ${update.is_liked ? 'text-red-500' : 'hover:text-red-500'}`}>
+                                                <Heart size={18} weight={update.is_liked ? "fill" : "regular"} /> <span className="text-sm">{update.like_count > 0 ? update.like_count : ''}</span>
+                                            </button>
                                             <button className="flex items-center gap-1 hover:text-red-500 transition-colors"><PaperPlaneRight size={18} /></button>
                                         </div>
                                     </div>
@@ -304,23 +357,37 @@ export default function UserProfile() {
                                             const commentAuthor = users.find(u => u.id === comment.user_id);
                                             if (!commentAuthor) return null;
                                             return (
-                                                <div key={comment.id} className="mb-3 text-sm">
-                                                    <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
-                                                    <span className="text-neutral-500 ml-1 text-xs">· {new Date(comment.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                <div key={comment.id} className="mb-3 text-sm flex gap-2">
+                                                    {commentAuthor.avatar ? (
+                                                        <img src={commentAuthor.avatar} alt={commentAuthor.first_name} className="size-6 rounded-full object-cover mt-0.5 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="size-6 rounded-full flex items-center justify-center text-white text-xs font-medium mt-0.5 flex-shrink-0" style={{ backgroundColor: getColorFromName(commentAuthor.first_name) }}>
+                                                            {commentAuthor.first_name[0]}{commentAuthor.last_name[0]}
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
+                                                        <span className="text-neutral-500 ml-1 text-xs">· {new Date(comment.created_at * 1000).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
+                                        
                                         <form onSubmit={(e) => handleSendComment(e, update.id)} className="flex items-center gap-2 mt-2">
                                             <input
                                                 type="text"
                                                 value={commentInput}
                                                 onChange={(e) => setCommentInput(e.target.value)}
                                                 placeholder="Write a reply..."
-                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700"
+                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700 transition-all"
                                             />
-                                            <button type="submit" disabled={!commentInput.trim() || isSendingComment} className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50">
-                                                Reply
+                                            <button 
+                                                type="submit" 
+                                                disabled={!commentInput.trim() || isSendingComment} 
+                                                className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50 transition-all flex items-center justify-center min-w-[60px]"
+                                            >
+                                                {isSendingComment ? '...' : 'Reply'}
                                             </button>
                                         </form>
                                     </div>
