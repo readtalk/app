@@ -47,6 +47,7 @@ export default function Overview() {
     const [isSendingComment, setIsSendingComment] = useState(false);
 
     const sessionId = typeof window !== 'undefined' ? localStorage.getItem('session') || '' : '';
+    const currentUserId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
     const userMap = useMemo(() => {
         return users.reduce((acc, user) => {
@@ -175,7 +176,22 @@ export default function Overview() {
     const handleSendComment = async (e: React.FormEvent, id: string) => {
         e.preventDefault();
         if (!commentInput.trim() || isSendingComment) return;
+        
+        const tempComment = {
+            id: `temp-${Date.now()}`,
+            user_id: currentUserId || '',
+            content: commentInput,
+            created_at: Math.floor(Date.now() / 1000)
+        };
+        
+        setComments(prev => ({
+            ...prev,
+            [id]: [...(prev[id] || []), tempComment]
+        }));
+        
+        setCommentInput("");
         setIsSendingComment(true);
+
         try {
             const res = await fetch(`https://readtalk.soeparnocorp.workers.dev/updates/${id}/comments`, {
                 method: 'POST',
@@ -183,15 +199,15 @@ export default function Overview() {
                     'Content-Type': 'application/json',
                     'X-Session-Id': sessionId
                 },
-                body: JSON.stringify({ content: commentInput })
+                body: JSON.stringify({ content: tempComment.content })
             });
             const data = await res.json();
+            
             if (data.success) {
                 setComments(prev => ({
                     ...prev,
-                    [id]: [...(prev[id] || []), data.comment]
+                    [id]: prev[id].map(c => c.id === tempComment.id ? data.comment : c)
                 }));
-                setCommentInput("");
             }
         } catch (error) {
             console.error("Failed to send comment", error);
@@ -328,23 +344,37 @@ export default function Overview() {
                                             const commentAuthor = userMap[comment.user_id];
                                             if (!commentAuthor) return null;
                                             return (
-                                                <div key={comment.id} className="mb-3 text-sm">
-                                                    <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
-                                                    <span className="text-neutral-500 ml-1 text-xs">· {formatTime(comment.created_at)}</span>
-                                                    <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                <div key={comment.id} className="mb-3 text-sm flex gap-2">
+                                                    {commentAuthor.avatar ? (
+                                                        <img src={commentAuthor.avatar} alt={commentAuthor.first_name} className="size-6 rounded-full object-cover mt-0.5 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="size-6 rounded-full flex items-center justify-center text-white text-xs font-medium mt-0.5 flex-shrink-0" style={{ backgroundColor: getColorFromName(commentAuthor.first_name) }}>
+                                                            {commentAuthor.first_name[0]}{commentAuthor.last_name[0]}
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <span className="font-semibold text-neutral-900 dark:text-white">{commentAuthor.first_name} {commentAuthor.last_name}</span>
+                                                        <span className="text-neutral-500 ml-1 text-xs">· {formatTime(comment.created_at)}</span>
+                                                        <p className="mt-0.5 text-neutral-700 dark:text-neutral-300">{comment.content}</p>
+                                                    </div>
                                                 </div>
                                             );
                                         })}
+                                        
                                         <form onSubmit={(e) => handleSendComment(e, update.id)} className="flex items-center gap-2 mt-2">
                                             <input
                                                 type="text"
                                                 value={commentInput}
                                                 onChange={(e) => setCommentInput(e.target.value)}
                                                 placeholder="Write a reply..."
-                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700"
+                                                className="flex-1 bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700 transition-all"
                                             />
-                                            <button type="submit" disabled={!commentInput.trim() || isSendingComment} className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50">
-                                                Reply
+                                            <button 
+                                                type="submit" 
+                                                disabled={!commentInput.trim() || isSendingComment} 
+                                                className="px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full hover:bg-red-600 disabled:opacity-50 transition-all flex items-center justify-center min-w-[60px]"
+                                            >
+                                                {isSendingComment ? '...' : 'Reply'}
                                             </button>
                                         </form>
                                     </div>
