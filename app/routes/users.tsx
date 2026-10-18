@@ -96,16 +96,19 @@ export default function UserProfile() {
             <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-4">
-                        <div className="relative inline-block">
+                        
+                        {/* CONTAINER AVATAR YANG DIPERBAIKI */}
+                        <div className="relative w-24 h-24">
                             {user.avatar ? (
-                                <img src={user.avatar} alt={fullName} className="size-24 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800" />
+                                <img src={user.avatar} alt={fullName} className="w-24 h-24 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800" />
                             ) : (
-                                <div className="size-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-neutral-200 dark:border-neutral-800" style={{ backgroundColor: getColorFromName(fullName) }}>
+                                <div className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-neutral-200 dark:border-neutral-800" style={{ backgroundColor: getColorFromName(fullName) }}>
                                     {initials}
                                 </div>
                             )}
-                            <div className={`absolute bottom-1 right-1 size-5 rounded-full border-4 border-white dark:border-neutral-950 ${isOnline ? 'bg-green-500' : 'bg-neutral-400'}`} />
+                            <div className={`absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-white dark:border-neutral-950 ${isOnline ? 'bg-green-500' : 'bg-neutral-400'}`} />
                         </div>
+
                         <div>
                             <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{fullName}</h2>
                             {user.username && <p className="text-neutral-500 mt-1">@{user.username}</p>}
