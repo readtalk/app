@@ -39,7 +39,10 @@ export default function Overview() {
     
     const [updates, setUpdates] = useState<Update[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    
+    const [hasMore, setHasMore] = useState(true);
+    const isLoadingMoreRef = useRef(false);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
     const [content, setContent] = useState("");
     const [isPosting, setIsPosting] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -65,25 +68,56 @@ export default function Overview() {
         }, {} as Record<string, User>);
     }, [users]);
 
-    const fetchUpdates = async () => {
+    const fetchUpdates = async (before?: string) => {
         try {
-            const res = await fetch('https://readtalk.soeparnocorp.workers.dev/updates', {
+            const url = new URL('https://readtalk.soeparnocorp.workers.dev/updates');
+            if (before) url.searchParams.append('before', before);
+
+            const res = await fetch(url.toString(), {
                 headers: { 'X-Session-Id': sessionId }
             });
             const data = await res.json();
+            
             if (data.success) {
-                setUpdates(data.updates);
+                if (before) {
+                    setUpdates(prev => [...prev, ...data.updates]);
+                } else {
+                    setUpdates(data.updates);
+                }
+                setHasMore(data.hasMore);
             }
         } catch (error) {
             console.error("Failed to fetch updates", error);
         } finally {
             setIsLoading(false);
+            isLoadingMoreRef.current = false;
         }
     };
 
     useEffect(() => {
         fetchUpdates();
     }, []);
+
+    const handleScroll = () => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        if (
+            container.scrollTop + container.clientHeight >= container.scrollHeight - 100 &&
+            hasMore &&
+            !isLoading &&
+            !isLoadingMoreRef.current &&
+            updates.length > 0
+        ) {
+            isLoadingMoreRef.current = true;
+            
+            const earliestUpdate = updates.reduce((earliest, current) =>
+                current.created_at < earliest.created_at ? current : earliest
+            );
+
+            fetchUpdates(earliestUpdate.id);
+        }
+    };
 
     const handlePost = async () => {
         if (!content.trim() || isPosting || content.length > 140) return;
@@ -102,6 +136,9 @@ export default function Overview() {
                 setUpdates([{ ...data.update, like_count: 0, comment_count: 0, repost_count: 0, is_liked: false, is_reposted: false }, ...updates]);
                 setContent("");
                 setImageUrl(null);
+                if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             }
         } catch (error) {
             console.error("Failed to post update", error);
@@ -305,16 +342,18 @@ export default function Overview() {
     }
 
     return (
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800" onClick={() => setActiveMenuId(null)}>
-            <div className="mb-4">
-                <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="What's happening?"
-                    className="w-full bg-transparent text-lg text-neutral-900 dark:text-white resize-none outline-none placeholder:text-neutral-500 border-b border-neutral-200 dark:border-neutral-800 pb-2"
-                    rows={3}
-                    maxLength={140}
-                />
+        <div className="flex flex-col h-full" onClick={() => setActiveMenuId(null)}>
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                    <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="What's happening?"
+                        className="flex-1 bg-transparent text-lg text-neutral-900 dark:text-white resize-none outline-none placeholder:text-neutral-500 border-b border-neutral-200 dark:border-neutral-800 pb-2"
+                        rows={2}
+                        maxLength={140}
+                    />
+                </div>
                 {imageUrl && (
                     <div className="relative mt-2 inline-block">
                         <img src={imageUrl} alt="Preview" className="max-h-40 rounded-lg" />
@@ -356,9 +395,13 @@ export default function Overview() {
                 </div>
             </div>
 
-            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4">
+            <div 
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto px-4 pb-4"
+            >
                 {updates.length === 0 ? (
-                    <div className="text-center text-neutral-500">Belum ada update.</div>
+                    <div className="text-center text-neutral-500 mt-4">Belum ada update.</div>
                 ) : (
                     updates.map((update) => {
                         const author = userMap[update.user_id];
@@ -500,6 +543,9 @@ export default function Overview() {
                             </div>
                         );
                     })
+                )}
+                {!hasMore && updates.length > 0 && (
+                    <div className="text-center py-4 text-sm text-neutral-500">Semua update sudah dimuat.</div>
                 )}
             </div>
         </div>
